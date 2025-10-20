@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../utils/statistics_storage.dart';
 
 class StatisticsScreen extends StatefulWidget {
-  const StatisticsScreen({super.key});
+  final bool showAppBar;
+
+  const StatisticsScreen({super.key, this.showAppBar = true});
 
   @override
   State<StatisticsScreen> createState() => _StatisticsScreenState();
@@ -55,7 +57,21 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   String _formatNumber(int number) {
-    return number.toString().padLeft(5, '0');
+    // 3자리마다 쉼표 추가
+    String numberStr = number.toString();
+    String result = '';
+    int count = 0;
+
+    for (int i = numberStr.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        result = ',$result';
+        count = 0;
+      }
+      result = numberStr[i] + result;
+      count++;
+    }
+
+    return result;
   }
 
   Widget _buildStatRow(String label, String value) {
@@ -117,6 +133,22 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     );
   }
 
+  Widget _buildCategoryHeader(String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      color: Colors.grey.shade200,
+      width: double.infinity,
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
+        ),
+      ),
+    );
+  }
+
   Widget _buildStatsContent(GameStatistics stats, String difficulty, String difficultyKorean) {
     return Column(
       children: [
@@ -125,20 +157,39 @@ class _StatisticsScreenState extends State<StatisticsScreen>
             child: Column(
               children: [
                 const SizedBox(height: 20),
+                // 게임 카테고리
+                _buildCategoryHeader('게임'),
                 _buildStatRow('시작한 게임', _formatNumber(stats.gamesStarted)),
-                const Divider(),
-                _buildStatRow('이긴 게임', _formatNumber(stats.gamesWon)),
-                const Divider(),
+                const Divider(height: 1),
+                _buildStatRow('승리한 게임', _formatNumber(stats.gamesWon)),
+                const Divider(height: 1),
                 _buildStatRow('승률', '${stats.winRate.toStringAsFixed(2)}%'),
-                const Divider(),
-                _buildStatRow('실수 없는 승리', _formatNumber(stats.perfectWins)),
-                const Divider(),
+                const Divider(height: 1),
+                _buildStatRow('실수 없이 승리', _formatNumber(stats.perfectWins)),
+                const SizedBox(height: 20),
+
+                // 최고 점수 카테고리
+                _buildCategoryHeader('최고 점수'),
+                _buildStatRow('오늘', _formatNumber(stats.todayHighScore)),
+                const Divider(height: 1),
+                _buildStatRow('이번주', _formatNumber(stats.weekHighScore)),
+                const Divider(height: 1),
+                _buildStatRow('이번달', _formatNumber(stats.monthHighScore)),
+                const Divider(height: 1),
+                _buildStatRow('통산', _formatNumber(stats.totalScore)),
+                const SizedBox(height: 20),
+
+                // 시간 카테고리
+                _buildCategoryHeader('시간'),
                 _buildStatRow('최고 시간', _formatTime(stats.bestTime)),
-                const Divider(),
+                const Divider(height: 1),
                 _buildStatRow('평균 시간', _formatTime(stats.averageTime)),
-                const Divider(),
+                const SizedBox(height: 20),
+
+                // 연승 카테고리
+                _buildCategoryHeader('연승'),
                 _buildStatRow('현재 연승', _formatNumber(stats.currentStreak)),
-                const Divider(),
+                const Divider(height: 1),
                 _buildStatRow('최고 연승', _formatNumber(stats.bestStreak)),
                 const SizedBox(height: 20),
               ],
@@ -170,28 +221,69 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('통계'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: '입문자'),
-            Tab(text: '초보자'),
-            Tab(text: '초급'),
-            Tab(text: '중급'),
-            Tab(text: '고급'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
+      appBar: widget.showAppBar
+          ? AppBar(
+              title: const Text('통계'),
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              bottom: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: '입문자'),
+                  Tab(text: '초보자'),
+                  Tab(text: '초급'),
+                  Tab(text: '중급'),
+                  Tab(text: '고급'),
+                ],
+              ),
+            )
+          : null,
+      body: Column(
         children: [
-          _buildStatsContent(beginnerStats, 'beginner', '입문자'),
-          _buildStatsContent(rookieStats, 'rookie', '초보자'),
-          _buildStatsContent(easyStats, 'easy', '초급'),
-          _buildStatsContent(mediumStats, 'medium', '중급'),
-          _buildStatsContent(hardStats, 'hard', '고급'),
+          // 상단 타이틀 (showAppBar가 false일 때만 표시)
+          if (!widget.showAppBar)
+            SafeArea(
+              bottom: false,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '통계',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          // TabBar (showAppBar가 false일 때)
+          if (!widget.showAppBar)
+            Container(
+              color: Theme.of(context).colorScheme.inversePrimary,
+              child: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: '입문자'),
+                  Tab(text: '초보자'),
+                  Tab(text: '초급'),
+                  Tab(text: '중급'),
+                  Tab(text: '고급'),
+                ],
+              ),
+            ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildStatsContent(beginnerStats, 'beginner', '입문자'),
+                _buildStatsContent(rookieStats, 'rookie', '초보자'),
+                _buildStatsContent(easyStats, 'easy', '초급'),
+                _buildStatsContent(mediumStats, 'medium', '중급'),
+                _buildStatsContent(hardStats, 'hard', '고급'),
+              ],
+            ),
+          ),
         ],
       ),
     );

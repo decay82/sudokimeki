@@ -4,7 +4,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'models/sudoku_game.dart';
-import 'screens/welcome_screen.dart';
+import 'screens/main_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const WelcomeScreen(),
+      home: const MainScreen(),
     );
   }
 }

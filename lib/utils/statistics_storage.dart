@@ -10,6 +10,17 @@ class GameStatistics {
   final int currentStreak;
   final int bestStreak;
 
+  // 점수 관련 필드
+  final int todayHighScore;
+  final int weekHighScore;
+  final int monthHighScore;
+  final int totalScore;
+
+  // 점수 기록 시간 (리셋 확인용)
+  final String? lastScoreDate; // yyyy-MM-dd 형식
+  final String? lastScoreWeek; // yyyy-Www 형식 (ISO week)
+  final String? lastScoreMonth; // yyyy-MM 형식
+
   GameStatistics({
     this.gamesStarted = 0,
     this.gamesWon = 0,
@@ -18,6 +29,13 @@ class GameStatistics {
     this.totalTime = 0,
     this.currentStreak = 0,
     this.bestStreak = 0,
+    this.todayHighScore = 0,
+    this.weekHighScore = 0,
+    this.monthHighScore = 0,
+    this.totalScore = 0,
+    this.lastScoreDate,
+    this.lastScoreWeek,
+    this.lastScoreMonth,
   });
 
   double get winRate {
@@ -38,6 +56,13 @@ class GameStatistics {
         'totalTime': totalTime,
         'currentStreak': currentStreak,
         'bestStreak': bestStreak,
+        'todayHighScore': todayHighScore,
+        'weekHighScore': weekHighScore,
+        'monthHighScore': monthHighScore,
+        'totalScore': totalScore,
+        'lastScoreDate': lastScoreDate,
+        'lastScoreWeek': lastScoreWeek,
+        'lastScoreMonth': lastScoreMonth,
       };
 
   factory GameStatistics.fromJson(Map<String, dynamic> json) => GameStatistics(
@@ -48,6 +73,13 @@ class GameStatistics {
         totalTime: json['totalTime'] ?? 0,
         currentStreak: json['currentStreak'] ?? 0,
         bestStreak: json['bestStreak'] ?? 0,
+        todayHighScore: json['todayHighScore'] ?? 0,
+        weekHighScore: json['weekHighScore'] ?? 0,
+        monthHighScore: json['monthHighScore'] ?? 0,
+        totalScore: json['totalScore'] ?? 0,
+        lastScoreDate: json['lastScoreDate'],
+        lastScoreWeek: json['lastScoreWeek'],
+        lastScoreMonth: json['lastScoreMonth'],
       );
 }
 
@@ -71,6 +103,14 @@ class StatisticsStorage {
       totalTime: stats.totalTime,
       currentStreak: stats.currentStreak,
       bestStreak: stats.bestStreak,
+      // 점수 필드 유지
+      todayHighScore: stats.todayHighScore,
+      weekHighScore: stats.weekHighScore,
+      monthHighScore: stats.monthHighScore,
+      totalScore: stats.totalScore,
+      lastScoreDate: stats.lastScoreDate,
+      lastScoreWeek: stats.lastScoreWeek,
+      lastScoreMonth: stats.lastScoreMonth,
     );
 
     await prefs.setString(key, jsonEncode(newStats.toJson()));
@@ -80,6 +120,7 @@ class StatisticsStorage {
     required String difficulty,
     required int timeInSeconds,
     required bool isPerfect,
+    int score = 0,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final key = _getKey(difficulty);
@@ -92,6 +133,47 @@ class StatisticsStorage {
         ? timeInSeconds
         : (timeInSeconds < stats.bestTime ? timeInSeconds : stats.bestTime);
 
+    // 현재 시간 정보
+    final now = DateTime.now();
+    final currentDate = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final currentMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
+
+    // ISO 주 계산 (일요일 시작)
+    final startOfYear = DateTime(now.year, 1, 1);
+    final daysSinceStartOfYear = now.difference(startOfYear).inDays;
+    final weekNumber = ((daysSinceStartOfYear + startOfYear.weekday) / 7).ceil();
+    final currentWeek = '${now.year}-W${weekNumber.toString().padLeft(2, '0')}';
+
+    // 오늘 최고 점수 (날짜가 다르면 리셋)
+    int newTodayHighScore = stats.todayHighScore;
+    if (stats.lastScoreDate != currentDate) {
+      newTodayHighScore = score;
+    } else if (score > stats.todayHighScore) {
+      newTodayHighScore = score;
+    }
+
+    // 이번주 최고 점수 (주가 다르면 리셋)
+    int newWeekHighScore = stats.weekHighScore;
+    if (stats.lastScoreWeek != currentWeek) {
+      newWeekHighScore = score;
+    } else if (score > stats.weekHighScore) {
+      newWeekHighScore = score;
+    }
+
+    // 이번달 최고 점수 (월이 다르면 리셋)
+    int newMonthHighScore = stats.monthHighScore;
+    if (stats.lastScoreMonth != currentMonth) {
+      newMonthHighScore = score;
+    } else if (score > stats.monthHighScore) {
+      newMonthHighScore = score;
+    }
+
+    // 통산 최고 점수 (역대 최고)
+    int newTotalScore = stats.totalScore;
+    if (score > stats.totalScore) {
+      newTotalScore = score;
+    }
+
     final newStats = GameStatistics(
       gamesStarted: stats.gamesStarted,
       gamesWon: stats.gamesWon + 1,
@@ -100,6 +182,13 @@ class StatisticsStorage {
       totalTime: stats.totalTime + timeInSeconds,
       currentStreak: newStreak,
       bestStreak: newBestStreak,
+      todayHighScore: newTodayHighScore,
+      weekHighScore: newWeekHighScore,
+      monthHighScore: newMonthHighScore,
+      totalScore: newTotalScore,
+      lastScoreDate: currentDate,
+      lastScoreWeek: currentWeek,
+      lastScoreMonth: currentMonth,
     );
 
     await prefs.setString(key, jsonEncode(newStats.toJson()));

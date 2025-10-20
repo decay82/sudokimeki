@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:in_app_update/in_app_update.dart';
 import '../models/sudoku_game.dart';
 import '../utils/game_storage.dart';
 import '../utils/ad_helper.dart';
 import '../utils/play_counter.dart';
 import '../data/puzzle_data.dart';
 import 'sudoku_screen.dart';
-import 'statistics_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
-  const WelcomeScreen({super.key});
+  final bool showAppBar;
+  final Function(int)? onNavigate;
+
+  const WelcomeScreen({super.key, this.showAppBar = true, this.onNavigate});
 
   @override
   State<WelcomeScreen> createState() => _WelcomeScreenState();
@@ -27,6 +30,27 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     super.initState();
     _checkSavedGame();
     AdHelper.preloadInterstitialAd();
+    _checkForUpdate();
+  }
+
+  Future<void> _checkForUpdate() async {
+    try {
+      AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
+
+      if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
+        final availableVersionCode = updateInfo.availableVersionCode ?? 0;
+
+        // 1.1.5+15 이상 버전이 Play Store에 나오면 즉시 업데이트 (강제)
+        // 현재 버전: 1.1.4+14
+        // 다음 버전: 1.1.5+15 → 즉시 업데이트 실행
+        if (availableVersionCode >= 15) {
+          await InAppUpdate.performImmediateUpdate();
+        }
+        // 15 미만 버전은 업데이트 안 함
+      }
+    } catch (e) {
+      print('인앱 업데이트 확인 실패: $e');
+    }
   }
 
   Future<void> _checkSavedGame() async {
@@ -433,23 +457,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
                     const Spacer(flex: 2),
                   ],
-                ),
-              ),
-
-              Positioned(
-                right: 20,
-                bottom: 20,
-                child: FloatingActionButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const StatisticsScreen(),
-                      ),
-                    );
-                  },
-                  backgroundColor: Colors.white,
-                  foregroundColor: Theme.of(context).colorScheme.primary,
-                  child: const Icon(Icons.bar_chart, size: 28),
                 ),
               ),
                 ],

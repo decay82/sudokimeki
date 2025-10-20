@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'dart:math';
+import 'package:confetti/confetti.dart';
 
 import '../models/sudoku_game.dart';
 import '../utils/ad_helper.dart';
@@ -10,10 +11,28 @@ import '../utils/sound_helper.dart';
 import '../widgets/sudoku_board.dart';
 import '../widgets/number_pad.dart';
 import '../data/puzzle_data.dart';
-import 'welcome_screen.dart';
+import '../utils/daily_mission_storage.dart';
+import 'main_screen.dart';
 
 class SudokuScreen extends StatefulWidget {
-  const SudokuScreen({super.key});
+  final String? difficulty;
+  final bool isDailyMission;
+  final String? dailyMissionDate;
+  final int? puzzleNumber;
+  final List<List<int>>? savedBoard;
+  final List<List<bool>>? savedCorrectCells;
+  final int? savedElapsedSeconds;
+
+  const SudokuScreen({
+    super.key,
+    this.difficulty,
+    this.isDailyMission = false,
+    this.dailyMissionDate,
+    this.puzzleNumber,
+    this.savedBoard,
+    this.savedCorrectCells,
+    this.savedElapsedSeconds,
+  });
 
   @override
   State<SudokuScreen> createState() => _SudokuScreenState();
@@ -22,10 +41,13 @@ class SudokuScreen extends StatefulWidget {
 class _SudokuScreenState extends State<SudokuScreen> {
   final List<GlobalKey> _heartKeys = List.generate(3, (_) => GlobalKey());
   bool _isLoading = false;
+  late ConfettiController _confettiController;
+
 
   @override
   void initState() {
     super.initState();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
     AdHelper.preloadRewardedAd();
 
     Future.doWhile(() async {
@@ -45,7 +67,29 @@ class _SudokuScreenState extends State<SudokuScreen> {
       game.onGameOverCallback = () {
         _showGameOverDialog(context, game);
       };
+
+      // 일일 미션인 경우 퍼즐 로드
+      if (widget.isDailyMission && widget.puzzleNumber != null) {
+        if (widget.savedBoard != null && widget.savedCorrectCells != null) {
+          // 저장된 진행 상황 불러오기
+          game.loadDailyMissionProgress(
+            puzzleNumber: widget.puzzleNumber!,
+            savedBoard: widget.savedBoard!,
+            savedCorrectCells: widget.savedCorrectCells!,
+            elapsedSeconds: widget.savedElapsedSeconds ?? 0,
+          );
+        } else {
+          // 새로운 퍼즐 시작
+          game.loadStage(widget.puzzleNumber!, difficulty: widget.difficulty ?? 'easy', recordStart: true);
+        }
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
   }
 
   Offset _getHeartPosition(int heartIndex) {
@@ -59,6 +103,25 @@ class _SudokuScreenState extends State<SudokuScreen> {
     }
     return Offset.zero;
   }
+
+  String _formatScore(int score) {
+    // 3자리마다 쉼표 추가
+    String scoreStr = score.toString();
+    String result = '';
+    int count = 0;
+
+    for (int i = scoreStr.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        result = ',$result';
+        count = 0;
+      }
+      result = scoreStr[i] + result;
+      count++;
+    }
+
+    return result;
+  }
+
 
   void _showOptionsDialog(BuildContext context) async {
     bool soundEnabled = await SoundHelper.isSoundEnabled();
@@ -157,100 +220,118 @@ class _SudokuScreenState extends State<SudokuScreen> {
               ],
             ),
             actions: [
-              TextButton.icon(
-                onPressed: () {
-                  print('>>> 하트 광고 버튼 클릭됨');
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextButton.icon(
+                    onPressed: () {
+                      print('>>> 하트 광고 버튼 클릭됨');
 
-                  RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
+                      RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
 
-                  if (ad != null) {
-                    bool rewardEarned = false;
+                      if (ad != null) {
+                        bool rewardEarned = false;
 
-                    ad.fullScreenContentCallback = FullScreenContentCallback(
-                      onAdFailedToShowFullScreenContent: (ad, error) {
-                        print('!!! 하트 광고 표시 실패: ${error.message}');
-                        ad.dispose();
-                      },
-                      onAdDismissedFullScreenContent: (ad) {
-                        print('하트 광고 닫힘 - rewardEarned: $rewardEarned');
-                        ad.dispose();
+                        ad.fullScreenContentCallback = FullScreenContentCallback(
+                          onAdFailedToShowFullScreenContent: (ad, error) {
+                            print('!!! 하트 광고 표시 실패: ${error.message}');
+                            ad.dispose();
+                          },
+                          onAdDismissedFullScreenContent: (ad) {
+                            print('하트 광고 닫힘 - rewardEarned: $rewardEarned');
+                            ad.dispose();
 
-                        if (rewardEarned) {
-                          print('보상 지급: 하트 추가');
-                          game.addHeart();
-                          if (context.mounted) {
-                            Navigator.of(context).pop();
-                            game.resumeTimer();
-                          }
+                            if (rewardEarned) {
+                              print('보상 지급: 하트 추가');
+                              game.addHeart();
+                              if (context.mounted) {
+                                Navigator.of(context).pop();
+                                game.resumeTimer();
+                              }
+                            }
+                          },
+                        );
+
+                        ad.show(
+                          onUserEarnedReward: (ad, reward) {
+                            print('광고 시청 보상 조건 충족!');
+                            rewardEarned = true;
+                          },
+                        );
+                      } else {
+                        print('!!! 하트 광고 로드 실패. 보상을 바로 지급합니다.');
+                        game.addHeart();
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                          game.resumeTimer();
                         }
-                      },
-                    );
-
-                    ad.show(
-                      onUserEarnedReward: (ad, reward) {
-                        print('광고 시청 보상 조건 충족!');
-                        rewardEarned = true;
-                      },
-                    );
-                  } else {
-                    print('!!! 하트 광고 로드 실패. 보상을 바로 지급합니다.');
-                    game.addHeart();
-                    if (context.mounted) {
+                      }
+                    },
+                    icon: const Icon(Icons.videocam),
+                    label: const Text('광고 시청 후 하트 1개 충전'),
+                  ),
+                  TextButton.icon(
+                    onPressed: () async {
                       Navigator.of(context).pop();
-                      game.resumeTimer();
-                    }
-                  }
-                },
-                icon: const Icon(Icons.videocam),
-                label: const Text('광고 시청 후 하트 1개 받기'),
-              ),
-              TextButton.icon(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  setState(() => _isLoading = true);
+                      setState(() => _isLoading = true);
 
-                  // 플레이 횟수 증가
-                  await PlayCounter.incrementPlayCount();
+                      // 플레이 횟수 증가
+                      await PlayCounter.incrementPlayCount();
 
-                  // 3회 이상일 때만 광고 표시
-                  bool shouldShowAd = await PlayCounter.shouldShowAd();
+                      // 3회 이상일 때만 광고 표시
+                      bool shouldShowAd = await PlayCounter.shouldShowAd();
 
-                  if (shouldShowAd) {
-                    InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
+                      if (shouldShowAd) {
+                        InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
 
-                    if (ad != null) {
-                      ad.fullScreenContentCallback = FullScreenContentCallback(
-                        onAdFailedToShowFullScreenContent: (ad, error) {
-                          print('!!! 전면 광고 표시 실패: ${error.message}');
-                          ad.dispose();
+                        if (ad != null) {
+                          ad.fullScreenContentCallback = FullScreenContentCallback(
+                            onAdFailedToShowFullScreenContent: (ad, error) {
+                              print('!!! 전면 광고 표시 실패: ${error.message}');
+                              ad.dispose();
+                              game.resumeTimer();
+                              game.restartStage();
+                              setState(() => _isLoading = false);
+                            },
+                            onAdDismissedFullScreenContent: (ad) {
+                              print('전면 광고 닫힘');
+                              ad.dispose();
+                              game.resumeTimer();
+                              game.restartStage();
+                              setState(() => _isLoading = false);
+                            },
+                          );
+                          ad.show();
+                        } else {
+                          print('!!! 전면 광고 로드 실패. 바로 다시 시작합니다.');
                           game.resumeTimer();
                           game.restartStage();
                           setState(() => _isLoading = false);
-                        },
-                        onAdDismissedFullScreenContent: (ad) {
-                          print('전면 광고 닫힘');
-                          ad.dispose();
-                          game.resumeTimer();
-                          game.restartStage();
-                          setState(() => _isLoading = false);
-                        },
+                        }
+                      } else {
+                        print('플레이 횟수 3회 미만, 광고 스킵');
+                        game.resumeTimer();
+                        game.restartStage();
+                        setState(() => _isLoading = false);
+                      }
+                    },
+                    icon: const Icon(Icons.restart_alt),
+                    label: const Text('다시 시작'),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // 게임 오버 다이얼로그 닫기
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => const MainScreen(),
+                        ),
                       );
-                      ad.show();
-                    } else {
-                      print('!!! 전면 광고 로드 실패. 바로 새 게임을 시작합니다.');
-                      game.resumeTimer();
-                      game.restartStage();
-                      setState(() => _isLoading = false);
-                    }
-                  } else {
-                    print('플레이 횟수 3회 미만, 광고 스킵');
-                    game.resumeTimer();
-                    game.restartStage();
-                    setState(() => _isLoading = false);
-                  }
-                },
-                icon: const Icon(Icons.restart_alt),
-                label: const Text('새 게임'),
+                    },
+                    icon: const Icon(Icons.home),
+                    label: const Text('홈'),
+                  ),
+                ],
               ),
             ],
           ),
@@ -259,36 +340,130 @@ class _SudokuScreenState extends State<SudokuScreen> {
     );
   }
 
-  void _showCompletionDialog(BuildContext context, SudokuGame game) {
+  void _showCompletionDialog(BuildContext context, SudokuGame game) async {
     final timeString = game.getElapsedTimeString();
+
+    // 일일 미션이면 완료 처리
+    if (widget.isDailyMission && widget.dailyMissionDate != null) {
+      await DailyMissionStorage.completeMission(
+        widget.dailyMissionDate!,
+        widget.difficulty ?? 'easy',
+        game.currentStage,
+        elapsedSeconds: game.elapsedTime.inSeconds,
+      );
+    }
+
+    if (!mounted) return;
+
+    // 컨페티 시작
+    _confettiController.play();
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('🎉 스테이지 완료! 🎉'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.star, color: Colors.amber, size: 80),
-              const SizedBox(height: 16),
-              Text(
-                '기록: $timeString',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+        return Stack(
+          children: [
+            // 컨페티 위젯 (화면 상단 중앙에서 아래로, 넓게 퍼짐)
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirection: pi / 2, // 아래 방향 (90도)
+                blastDirectionality: BlastDirectionality.explosive, // 폭발적으로 퍼짐
+                emissionFrequency: 0.05, // 발생 빈도
+                numberOfParticles: 20, // 한번에 나오는 입자 수
+                gravity: 0.15, // 중력 (0.3 → 0.15로 줄여서 50% 속도)
+                shouldLoop: false, // 반복 안함
+                maxBlastForce: 15, // 최대 폭발 힘 (넓게 퍼지게)
+                minBlastForce: 8, // 최소 폭발 힘
+                colors: const [
+                  Colors.red,
+                  Colors.blue,
+                  Colors.green,
+                  Colors.yellow,
+                  Colors.purple,
+                  Colors.orange,
+                  Colors.pink,
+                ],
               ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showDifficultySelectionDialog(context, game);
-              },
-              child: const Text('다음 스테이지'),
+            ),
+            // 다이얼로그
+            AlertDialog(
+              title: Text(widget.isDailyMission ? '🎉 일일 미션 완료! 🎉' : '🎉 스테이지 완료! 🎉'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text(
+                          '총 점수',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _formatScore(game.totalScore),
+                          style: const TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '기록: $timeString',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                if (widget.isDailyMission) ...[
+                  TextButton(
+                    onPressed: () {
+                      _confettiController.stop();
+                      Navigator.of(context).pop(); // 다이얼로그 닫기
+                      Navigator.of(context).pop(); // 일일 미션 화면으로 돌아가기
+                    },
+                    child: const Text('홈'),
+                  ),
+                ] else ...[
+                  TextButton(
+                    onPressed: () {
+                      _confettiController.stop();
+                      Navigator.of(context).pop();
+                      _showDifficultySelectionDialog(context, game);
+                    },
+                    child: const Text('다음 스테이지'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      _confettiController.stop();
+                      Navigator.of(context).pop(); // 다이얼로그 닫기
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => const MainScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text('홈'),
+                  ),
+                ],
+              ],
             ),
           ],
         );
@@ -358,6 +533,79 @@ class _SudokuScreenState extends State<SudokuScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
+              child: const Text('취소'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDifficultySelectionDialogFromGameOver(BuildContext context, SudokuGame game) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            '난이도 선택',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDifficultyButtonFromGameOver(
+                context: context,
+                game: game,
+                label: '입문자',
+                description: 'Beginner - 처음 시작하는 난이도',
+                color: Colors.lightBlue,
+                difficulty: 'beginner',
+              ),
+              const SizedBox(height: 12),
+              _buildDifficultyButtonFromGameOver(
+                context: context,
+                game: game,
+                label: '초보자',
+                description: 'Rookie - 연습하기 좋은 난이도',
+                color: Colors.cyan,
+                difficulty: 'rookie',
+              ),
+              const SizedBox(height: 12),
+              _buildDifficultyButtonFromGameOver(
+                context: context,
+                game: game,
+                label: '초급',
+                description: 'Easy - 쉬운 난이도',
+                color: Colors.green,
+                difficulty: 'easy',
+              ),
+              const SizedBox(height: 12),
+              _buildDifficultyButtonFromGameOver(
+                context: context,
+                game: game,
+                label: '중급',
+                description: 'Medium - 보통 난이도',
+                color: Colors.orange,
+                difficulty: 'medium',
+              ),
+              const SizedBox(height: 12),
+              _buildDifficultyButtonFromGameOver(
+                context: context,
+                game: game,
+                label: '고급',
+                description: 'Hard - 어려운 난이도',
+                color: Colors.red,
+                difficulty: 'hard',
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showGameOverDialog(context, game);
+              },
               child: const Text('취소'),
             ),
           ],
@@ -460,6 +708,104 @@ class _SudokuScreenState extends State<SudokuScreen> {
     );
   }
 
+  Widget _buildDifficultyButtonFromGameOver({
+    required BuildContext context,
+    required SudokuGame game,
+    required String label,
+    required String description,
+    required Color color,
+    required String difficulty,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () async {
+          Navigator.of(context).pop();
+          setState(() => _isLoading = true);
+
+          final puzzlesOfDifficulty = <int>[];
+          for (int i = 0; i < PuzzleData.difficulties.length; i++) {
+            if (PuzzleData.difficulties[i] == difficulty) {
+              puzzlesOfDifficulty.add(i);
+            }
+          }
+
+          int nextStage;
+          if (puzzlesOfDifficulty.isEmpty) {
+            nextStage = 0;
+          } else {
+            final random = Random();
+            nextStage = puzzlesOfDifficulty[random.nextInt(puzzlesOfDifficulty.length)];
+          }
+
+          // 플레이 횟수 증가
+          await PlayCounter.incrementPlayCount();
+
+          // 3회 이상일 때만 광고 표시
+          bool shouldShowAd = await PlayCounter.shouldShowAd();
+
+          if (shouldShowAd) {
+            InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
+
+            if (ad != null) {
+              ad.fullScreenContentCallback = FullScreenContentCallback(
+                onAdFailedToShowFullScreenContent: (ad, error) {
+                  print('!!! 전면 광고 표시 실패: ${error.message}');
+                  ad.dispose();
+                  game.resumeTimer();
+                  game.loadStage(nextStage, difficulty: difficulty);
+                  setState(() => _isLoading = false);
+                },
+                onAdDismissedFullScreenContent: (ad) {
+                  print('전면 광고 닫힘');
+                  ad.dispose();
+                  game.resumeTimer();
+                  game.loadStage(nextStage, difficulty: difficulty);
+                  setState(() => _isLoading = false);
+                },
+              );
+              ad.show();
+            } else {
+              print('!!! 전면 광고 로드 실패. 바로 새 게임을 시작합니다.');
+              game.resumeTimer();
+              game.loadStage(nextStage, difficulty: difficulty);
+              setState(() => _isLoading = false);
+            }
+          } else {
+            print('플레이 횟수 3회 미만, 광고 스킵');
+            game.resumeTimer();
+            game.loadStage(nextStage, difficulty: difficulty);
+            setState(() => _isLoading = false);
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Column(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              description,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final game = context.watch<SudokuGame>();
@@ -496,78 +842,137 @@ class _SudokuScreenState extends State<SudokuScreen> {
               icon: const Icon(Icons.arrow_back),
               onPressed: () async {
                 final game = context.read<SudokuGame>();
-                await game.saveGame();
+
+                // 일일 미션이면 진행 상황 저장
+                if (widget.isDailyMission && widget.dailyMissionDate != null && !game.isCompleted) {
+                  await DailyMissionStorage.saveMissionProgress(
+                    date: widget.dailyMissionDate!,
+                    difficulty: widget.difficulty ?? 'easy',
+                    puzzleNumber: game.currentStage,
+                    board: game.board,
+                    correctCells: game.correctCells,
+                    elapsedSeconds: game.elapsedTime.inSeconds,
+                  );
+                } else {
+                  // 일반 게임이면 기존 방식대로 저장
+                  await game.saveGame();
+                }
 
                 if (!context.mounted) return;
 
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const WelcomeScreen(),
-                  ),
-                );
+                // 일일 미션이면 단순히 뒤로가기
+                if (widget.isDailyMission) {
+                  Navigator.of(context).pop();
+                } else {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => const MainScreen(),
+                    ),
+                  );
+                }
               },
             ),
-            title: Row(
-              children: [
-                Text(difficultyText),
-                const Spacer(),
-                Row(
-                  children: List.generate(3, (index) {
-                    final isTargetHeart =
-                        game.heartAnimationStatus ==
-                            HeartAnimationStatus.animating &&
-                        index == game.hearts;
-                    return AnimatedScale(
-                      key: _heartKeys[index],
-                      scale: isTargetHeart ? 1.5 : 1.0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        index < game.hearts
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: Colors.red,
-                        size: 24,
-                      ),
-                    );
-                  }),
-                ),
-                const SizedBox(width: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.timer, size: 18),
-                      const SizedBox(width: 4),
-                      Text(
-                        game.getElapsedTimeString(),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.settings, size: 24),
-                  onPressed: () {
-                    _showOptionsDialog(context);
-                  },
-                ),
-              ],
-            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings, size: 24),
+                onPressed: () {
+                  _showOptionsDialog(context);
+                },
+              ),
+            ],
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           ),
           body: Column(
             children: [
+              // 보드 위 게임 정보 영역
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // 난이도
+                    Text(
+                      difficultyText,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    // 점수
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.star, size: 18, color: Colors.amber),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${game.totalScore}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // 하트
+                    Row(
+                      children: List.generate(3, (index) {
+                        final isTargetHeart =
+                            game.heartAnimationStatus ==
+                                HeartAnimationStatus.animating &&
+                            index == game.hearts;
+                        return AnimatedScale(
+                          key: _heartKeys[index],
+                          scale: isTargetHeart ? 1.5 : 1.0,
+                          duration: const Duration(milliseconds: 200),
+                          child: Icon(
+                            index < game.hearts
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: Colors.red,
+                            size: 24,
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(width: 12),
+                    // 타이머
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.timer, size: 18),
+                          const SizedBox(width: 4),
+                          Text(
+                            game.getElapsedTimeString(),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               const Expanded(flex: 3, child: Center(child: SudokuBoard())),
               const Expanded(flex: 1, child: NumberPad()),
               SizedBox(
@@ -706,3 +1111,4 @@ class _DelayCurve extends Curve {
     return Curves.easeOutCubic.transformInternal(adjustedT);
   }
 }
+

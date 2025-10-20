@@ -31218,4 +31218,22 @@ class PuzzleData {
   ];
 
   static int get totalStages => puzzles.length;
+
+  // 난이도별 퍼즐 번호 반환
+  static List<int> getPuzzlesByDifficulty(String difficulty) {
+    switch (difficulty) {
+      case 'beginner':
+        return List.generate(240, (index) => index); // 0-239 (240개)
+      case 'rookie':
+        return List.generate(240, (index) => index + 240); // 240-479 (240개)
+      case 'easy':
+        return List.generate(240, (index) => index + 480); // 480-719 (240개)
+      case 'medium':
+        return List.generate(240, (index) => index + 720); // 720-959 (240개)
+      case 'hard':
+        return List.generate(240, (index) => index + 960); // 960-1199 (240개)
+      default:
+        return List.generate(240, (index) => index + 480); // 기본값: easy
+    }
+  }
 }
