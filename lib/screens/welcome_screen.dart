@@ -39,15 +39,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
 
       if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
-        final availableVersionCode = updateInfo.availableVersionCode ?? 0;
-
-        // 1.1.5+15 이상 버전이 Play Store에 나오면 즉시 업데이트 (강제)
-        // 현재 버전: 1.1.4+14
-        // 다음 버전: 1.1.5+15 → 즉시 업데이트 실행
-        if (availableVersionCode >= 15) {
-          await InAppUpdate.performImmediateUpdate();
-        }
-        // 15 미만 버전은 업데이트 안 함
+        // 업데이트가 있으면 항상 즉시 업데이트 (강제)
+        await InAppUpdate.performImmediateUpdate();
       }
     } catch (e) {
       print('인앱 업데이트 확인 실패: $e');

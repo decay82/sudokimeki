@@ -561,10 +561,10 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                   builder: (context) {
                     final screenHeight = MediaQuery.of(context).size.height;
                     final isSmallScreen = screenHeight < 700;
-                    final iconSize = isSmallScreen ? 80.0 : 128.0;
-                    final verticalPadding = 16.0;
-                    final spacingHeight = 16.0;
-                    final bottomSpacing = 8.0;
+                    final iconSize = isSmallScreen ? 60.0 : 128.0;
+                    final verticalPadding = isSmallScreen ? 8.0 : 16.0;
+                    final spacingHeight = isSmallScreen ? 8.0 : 16.0;
+                    final bottomSpacing = isSmallScreen ? 4.0 : 8.0;
 
                     return Container(
                       padding: EdgeInsets.all(verticalPadding),
