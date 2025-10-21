@@ -33,104 +33,64 @@ class NumberPad extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            // 스마트 입력, 메모, 삭제, 힌트 버튼 (2줄)
+            // 기능 버튼 (1줄, 4개)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // 스마트 입력 버튼
                 Flexible(
-                  child: SizedBox(
-                    width: 110,
-                    height: 44,
-                    child: ElevatedButton.icon(
-                      onPressed: game.toggleSmartInputMode,
-                      icon: Icon(
-                        game.isSmartInputMode ? Icons.touch_app : Icons.touch_app_outlined,
-                        size: 18,
-                      ),
-                      label: Text(
-                        game.isSmartInputMode ? '스마트 ON' : '스마트',
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            game.isSmartInputMode ? Colors.purple : Colors.grey,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                      ),
+                  child: _buildFunctionButton(
+                    onPressed: game.toggleSmartInputMode,
+                    icon: Icon(
+                      game.isSmartInputMode ? Icons.touch_app : Icons.touch_app_outlined,
+                      size: 13,
                     ),
+                    label: game.isSmartInputMode ? '스마트\nON' : '스마트',
+                    isActive: game.isSmartInputMode,
+                    activeColor: Colors.purple,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
+                // 메모 버튼
                 Flexible(
-                  child: SizedBox(
-                    width: 110,
-                    height: 44,
-                    child: ElevatedButton.icon(
-                      onPressed: game.toggleMemoMode,
-                      icon: Icon(
-                        game.isMemoMode ? Icons.edit : Icons.edit_outlined,
-                        size: 18,
-                      ),
-                      label: Text(
-                        game.isMemoMode ? '메모 ON' : '메모',
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            game.isMemoMode ? Colors.orange : Colors.grey,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                      ),
+                  child: _buildFunctionButton(
+                    onPressed: game.toggleMemoMode,
+                    icon: Icon(
+                      game.isMemoMode ? Icons.edit : Icons.edit_outlined,
+                      size: 13,
                     ),
+                    label: game.isMemoMode ? '메모\nON' : '메모',
+                    isActive: game.isMemoMode,
+                    activeColor: Colors.orange,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+                const SizedBox(width: 4),
+                // 삭제 버튼
                 Flexible(
-                  child: SizedBox(
-                    width: 110,
-                    height: 44,
-                    child: ElevatedButton.icon(
-                      onPressed: game.clearCell,
-                      icon: const Icon(Icons.clear, size: 18),
-                      label: const Text(
-                        '삭제',
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                      ),
-                    ),
+                  child: _buildFunctionButton(
+                    onPressed: game.clearCell,
+                    icon: const Icon(Icons.clear, size: 13),
+                    label: '삭제',
+                    isActive: false,
+                    activeColor: Colors.red,
+                    backgroundColor: Colors.red,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
+                // 힌트 버튼
                 Flexible(
-                  child: SizedBox(
-                    width: 110,
-                    height: 44,
-                    child: ElevatedButton.icon(
-                      onPressed: game.toggleHintMode,
-                      icon: Icon(
-                        game.isHintMode ? Icons.lightbulb : Icons.play_circle_outline,
-                        size: 18,
-                      ),
-                      label: Text(
-                        game.isHintMode ? '힌트 ON' : '힌트',
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            game.isHintMode ? Colors.amber : Colors.grey,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                      ),
-                    ),
+                  child: _buildFunctionButton(
+                    onPressed: game.toggleHintMode,
+                    icon: game.hintsAvailable == 0
+                        ? const Icon(Icons.play_circle_outline, size: 13)
+                        : null,
+                    label: game.isHintMode
+                        ? '힌트\nON'
+                        : game.hintsAvailable > 0
+                            ? '힌트\n+${game.hintsAvailable}'
+                            : '힌트',
+                    isActive: game.isHintMode,
+                    activeColor: Colors.amber,
                   ),
                 ),
               ],
@@ -218,6 +178,45 @@ class NumberPad extends StatelessWidget {
                   }),
                 );
               },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFunctionButton({
+    required VoidCallback onPressed,
+    Widget? icon,
+    required String label,
+    required bool isActive,
+    required Color activeColor,
+    Color? backgroundColor,
+  }) {
+    final bgColor = backgroundColor ?? (isActive ? activeColor : Colors.grey);
+
+    return SizedBox(
+      height: 50,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: bgColor,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              icon,
+              const SizedBox(height: 2),
+            ],
+            Text(
+              label,
+              style: const TextStyle(fontSize: 10),
+              textAlign: TextAlign.center,
+              maxLines: 2,
             ),
           ],
         ),

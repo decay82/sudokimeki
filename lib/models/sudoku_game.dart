@@ -49,6 +49,7 @@ class SudokuGame extends ChangeNotifier {
 
   bool isHintMode = false;
   int hintsUsed = 0;
+  int hintsAvailable = 1; // 보유 힌트 개수
 
   BannerAd? bannerAd;
   bool isBannerAdLoaded = false;
@@ -87,18 +88,17 @@ class SudokuGame extends ChangeNotifier {
   }
 
 void addHeart() {
-  if (hearts < 3) {
-    hearts++;  // 즉시 증가
-    print("하트 증가: $hearts");
-    heartAnimationStatus = HeartAnimationStatus.animating;
+  // 하트를 3개로 충전
+  hearts = 3;
+  print("하트 충전: $hearts개로 복구");
+  heartAnimationStatus = HeartAnimationStatus.animating;
+  notifyListeners();
+
+  // 애니메이션 시간 후 상태만 리셋
+  Future.delayed(const Duration(milliseconds: 1000), () {
+    heartAnimationStatus = HeartAnimationStatus.none;
     notifyListeners();
-    
-    // 애니메이션 시간 후 상태만 리셋
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      heartAnimationStatus = HeartAnimationStatus.none;
-      notifyListeners();
-    });
-  }
+  });
 }
 
   
@@ -310,31 +310,40 @@ void addHeart() {
     print('========== toggleHintMode 호출됨 ==========');
 
     if (!isHintMode) {
-      RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
-
-      if (ad != null) {
-        ad.fullScreenContentCallback = FullScreenContentCallback(
-          onAdFailedToShowFullScreenContent: (ad, error) {
-            print('!!! 힌트 광고 표시 실패: ${error.message}');
-            ad.dispose();
-          },
-          onAdDismissedFullScreenContent: (ad) {
-            print('힌트 광고 닫힘');
-            ad.dispose();
-          },
-        );
-
-        ad.show(
-          onUserEarnedReward: (ad, reward) {
-            print('힌트 광고 보상 획득!');
-            isHintMode = true;
-            notifyListeners();
-          },
-        );
-      } else {
-        print('!!! 힌트 광고 로드 실패. 힌트 모드를 바로 활성화합니다.');
+      // 힌트가 있으면 바로 활성화
+      if (hintsAvailable > 0) {
+        print('보유 힌트 사용: $hintsAvailable개');
         isHintMode = true;
         notifyListeners();
+      } else {
+        // 힌트가 없으면 광고 시청
+        print('힌트 없음. 광고 시청 필요');
+        RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
+
+        if (ad != null) {
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              print('!!! 힌트 광고 표시 실패: ${error.message}');
+              ad.dispose();
+            },
+            onAdDismissedFullScreenContent: (ad) {
+              print('힌트 광고 닫힘');
+              ad.dispose();
+            },
+          );
+
+          ad.show(
+            onUserEarnedReward: (ad, reward) {
+              print('힌트 광고 보상 획득!');
+              isHintMode = true;
+              notifyListeners();
+            },
+          );
+        } else {
+          print('!!! 힌트 광고 로드 실패. 힌트 모드를 바로 활성화합니다.');
+          isHintMode = true;
+          notifyListeners();
+        }
       }
     } else {
       isHintMode = false;
@@ -350,6 +359,12 @@ void addHeart() {
       correctCells[row][col] = true;
       hintsUsed++;
       isHintMode = false;
+
+      // 보유 힌트 개수 감소
+      if (hintsAvailable > 0) {
+        hintsAvailable--;
+        print('힌트 사용 완료. 남은 힌트: $hintsAvailable개');
+      }
 
       // 힌트 사용 시 콤보 초기화 및 0점 처리
       _calculateScore(row, col, isHint: true);
@@ -375,8 +390,12 @@ void addHeart() {
           // 주간 랭킹에 점수 저장
           await WeeklyBotRanking.saveMyWeeklyScore(currentDifficulty, totalScore);
 
-          // 랭킹 배지 활성화
-          await RankingBadgeHelper.activateBadge();
+          // 랭킹 배지 활성화 (초급, 중급, 고급만)
+          if (currentDifficulty == 'easy' ||
+              currentDifficulty == 'medium' ||
+              currentDifficulty == 'hard') {
+            await RankingBadgeHelper.activateBadge();
+          }
 
           await GameStorage.clearSavedGame();
 
@@ -404,16 +423,17 @@ void addHeart() {
     isCompleted = false;
     hearts = 3;
     hintsUsed = 0;
+    hintsAvailable = 1; // 매판 시작 시 힌트 1개 지급
 
     // 점수 시스템 초기화
     totalScore = 0;
     currentCombo = 0;
     lastCorrectAnswerTime = null;
-    
+
     if (recordStart) {
       await StatisticsStorage.recordGameStart(difficulty);
     }
-    
+
     notifyListeners();
   }
 
@@ -437,6 +457,7 @@ void addHeart() {
       hintsUsed: hintsUsed,
       elapsedSeconds: elapsedSeconds,
       completedLines: completedLines,
+      hintsAvailable: hintsAvailable,
     );
   }
 
@@ -455,6 +476,7 @@ void addHeart() {
     hearts = savedData['hearts'];
     hintsUsed = savedData['hintsUsed'];
     completedLines = savedData['completedLines'];
+    hintsAvailable = savedData['hintsAvailable'] ?? 1;
 
     final elapsedSeconds = savedData['elapsedSeconds'];
     startTime = DateTime.now().subtract(Duration(seconds: elapsedSeconds));
@@ -491,6 +513,7 @@ void addHeart() {
     isMemoMode = false;
     hearts = 3;
     hintsUsed = 0;
+    hintsAvailable = 1; // 매판 시작 시 힌트 1개 지급
     isCompleted = false;
 
     startTime = DateTime.now().subtract(Duration(seconds: elapsedSeconds));
@@ -741,8 +764,12 @@ void addHeart() {
             // 주간 랭킹에 점수 저장
             await WeeklyBotRanking.saveMyWeeklyScore(currentDifficulty, totalScore);
 
-            // 랭킹 배지 활성화
-            await RankingBadgeHelper.activateBadge();
+            // 랭킹 배지 활성화 (초급, 중급, 고급만)
+            if (currentDifficulty == 'easy' ||
+                currentDifficulty == 'medium' ||
+                currentDifficulty == 'hard') {
+              await RankingBadgeHelper.activateBadge();
+            }
 
             await GameStorage.clearSavedGame();
 

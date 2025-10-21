@@ -14,6 +14,7 @@ class GameStorage {
     required int hintsUsed,
     required int elapsedSeconds,
     required Set<String> completedLines,
+    int? hintsAvailable,
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -31,6 +32,7 @@ class GameStorage {
       'hintsUsed': hintsUsed,
       'elapsedSeconds': elapsedSeconds,
       'completedLines': completedLines.toList(),
+      'hintsAvailable': hintsAvailable ?? 1,
     };
 
     await prefs.setString(_keySavedGame, jsonEncode(gameData));
@@ -77,6 +79,7 @@ class GameStorage {
       'hintsUsed': gameData['hintsUsed'],
       'elapsedSeconds': gameData['elapsedSeconds'],
       'completedLines': completedLines,
+      'hintsAvailable': gameData['hintsAvailable'] ?? 1,
     };
   }
 

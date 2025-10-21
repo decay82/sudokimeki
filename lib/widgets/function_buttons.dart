@@ -86,21 +86,21 @@ class FunctionButtons extends StatelessWidget {
             child: SizedBox(
               width: 80,
               height: 36,
-              child: ElevatedButton.icon(
+              child: ElevatedButton(
                 onPressed: game.toggleHintMode,
-                icon: Icon(
-                  game.isHintMode ? Icons.lightbulb : Icons.play_circle_outline,
-                  size: 14,
-                ),
-                label: Text(
-                  game.isHintMode ? 'ON' : '',
-                  style: const TextStyle(fontSize: 10),
-                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
                       game.isHintMode ? Colors.amber : Colors.grey,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 4),
+                ),
+                child: Text(
+                  game.isHintMode
+                      ? '힌트 ON'
+                      : game.hintsAvailable > 0
+                          ? '힌트 +${game.hintsAvailable}'
+                          : '힌트',
+                  style: const TextStyle(fontSize: 10),
                 ),
               ),
             ),

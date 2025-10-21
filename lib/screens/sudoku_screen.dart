@@ -269,7 +269,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
                       }
                     },
                     icon: const Icon(Icons.videocam),
-                    label: const Text('광고 시청 후 하트 1개 충전'),
+                    label: const Text('광고 시청 후 하트 3개 충전'),
                   ),
                   TextButton.icon(
                     onPressed: () async {
