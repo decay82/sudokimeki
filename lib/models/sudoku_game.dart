@@ -8,6 +8,7 @@ import '../utils/statistics_storage.dart';
 import '../utils/sound_helper.dart';
 import '../utils/weekly_bot_ranking.dart';
 import '../utils/ranking_badge_helper.dart';
+import '../utils/difficulty_unlock_storage.dart';
 
 enum HeartAnimationStatus { none, animating }
 
@@ -387,6 +388,9 @@ void addHeart() {
             score: totalScore,
           );
 
+          // 난이도별 완료 횟수 증가
+          await DifficultyUnlockStorage.incrementCompleted(currentDifficulty);
+
           // 주간 랭킹에 점수 저장
           await WeeklyBotRanking.saveMyWeeklyScore(currentDifficulty, totalScore);
 
@@ -760,6 +764,9 @@ void addHeart() {
               isPerfect: hintsUsed == 0 && hearts == 3,
               score: totalScore,
             );
+
+            // 난이도별 완료 횟수 증가
+            await DifficultyUnlockStorage.incrementCompleted(currentDifficulty);
 
             // 주간 랭킹에 점수 저장
             await WeeklyBotRanking.saveMyWeeklyScore(currentDifficulty, totalScore);

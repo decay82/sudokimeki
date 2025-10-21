@@ -7,6 +7,7 @@ import '../models/sudoku_game.dart';
 import '../utils/game_storage.dart';
 import '../utils/ad_helper.dart';
 import '../utils/play_counter.dart';
+import '../utils/difficulty_unlock_storage.dart';
 import '../data/puzzle_data.dart';
 import 'sudoku_screen.dart';
 
@@ -109,65 +110,125 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text(
-            '난이도 선택',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildDifficultyButton(
-                context: context,
-                label: '입문자',
-                description: 'Beginner - 처음 시작하는 난이도',
-                color: Colors.lightBlue,
-                difficulty: 'beginner',
-              ),
-              const SizedBox(height: 12),
-              _buildDifficultyButton(
-                context: context,
-                label: '초보자',
-                description: 'Rookie - 연습하기 좋은 난이도',
-                color: Colors.cyan,
-                difficulty: 'rookie',
-              ),
-              const SizedBox(height: 12),
-              _buildDifficultyButton(
-                context: context,
-                label: '초급',
-                description: 'Easy - 쉬운 난이도',
-                color: Colors.green,
-                difficulty: 'easy',
-              ),
-              const SizedBox(height: 12),
-              _buildDifficultyButton(
-                context: context,
-                label: '중급',
-                description: 'Medium - 보통 난이도',
-                color: Colors.orange,
-                difficulty: 'medium',
-              ),
-              const SizedBox(height: 12),
-              _buildDifficultyButton(
-                context: context,
-                label: '고급',
-                description: 'Hard - 어려운 난이도',
-                color: Colors.red,
-                difficulty: 'hard',
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('취소'),
-            ),
-          ],
+        return FutureBuilder<Map<String, bool>>(
+          future: _checkAllDifficultiesUnlocked(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const AlertDialog(
+                content: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+
+            final unlockStatus = snapshot.data!;
+
+            return FutureBuilder<Map<String, String>>(
+              future: _getAllProgressTexts(),
+              builder: (context, progressSnapshot) {
+                if (!progressSnapshot.hasData) {
+                  return const AlertDialog(
+                    content: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+
+                final progressTexts = progressSnapshot.data!;
+
+                return AlertDialog(
+                  title: const Text(
+                    '난이도 선택',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildDifficultyButton(
+                        context: context,
+                        label: '입문자',
+                        description: 'Beginner - 처음 시작하는 난이도',
+                        color: Colors.lightBlue,
+                        difficulty: 'beginner',
+                        isUnlocked: unlockStatus['beginner'] ?? true,
+                        progressText: progressTexts['beginner'] ?? '',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildDifficultyButton(
+                        context: context,
+                        label: '초보자',
+                        description: 'Rookie - 연습하기 좋은 난이도',
+                        color: Colors.cyan,
+                        difficulty: 'rookie',
+                        isUnlocked: unlockStatus['rookie'] ?? true,
+                        progressText: progressTexts['rookie'] ?? '',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildDifficultyButton(
+                        context: context,
+                        label: '초급',
+                        description: 'Easy - 쉬운 난이도',
+                        color: Colors.green,
+                        difficulty: 'easy',
+                        isUnlocked: unlockStatus['easy'] ?? false,
+                        progressText: progressTexts['easy'] ?? '',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildDifficultyButton(
+                        context: context,
+                        label: '중급',
+                        description: 'Medium - 보통 난이도',
+                        color: Colors.orange,
+                        difficulty: 'medium',
+                        isUnlocked: unlockStatus['medium'] ?? false,
+                        progressText: progressTexts['medium'] ?? '',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildDifficultyButton(
+                        context: context,
+                        label: '고급',
+                        description: 'Hard - 어려운 난이도',
+                        color: Colors.red,
+                        difficulty: 'hard',
+                        isUnlocked: unlockStatus['hard'] ?? false,
+                        progressText: progressTexts['hard'] ?? '',
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('취소'),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
         );
       },
     );
+  }
+
+  Future<Map<String, bool>> _checkAllDifficultiesUnlocked() async {
+    return {
+      'beginner': await DifficultyUnlockStorage.isUnlocked('beginner'),
+      'rookie': await DifficultyUnlockStorage.isUnlocked('rookie'),
+      'easy': await DifficultyUnlockStorage.isUnlocked('easy'),
+      'medium': await DifficultyUnlockStorage.isUnlocked('medium'),
+      'hard': await DifficultyUnlockStorage.isUnlocked('hard'),
+    };
+  }
+
+  Future<Map<String, String>> _getAllProgressTexts() async {
+    return {
+      'beginner': await DifficultyUnlockStorage.getUnlockProgressText('beginner'),
+      'rookie': await DifficultyUnlockStorage.getUnlockProgressText('rookie'),
+      'easy': await DifficultyUnlockStorage.getUnlockProgressText('easy'),
+      'medium': await DifficultyUnlockStorage.getUnlockProgressText('medium'),
+      'hard': await DifficultyUnlockStorage.getUnlockProgressText('hard'),
+    };
   }
 
   Widget _buildDifficultyButton({
@@ -176,49 +237,53 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     required String description,
     required Color color,
     required String difficulty,
+    required bool isUnlocked,
+    required String progressText,
   }) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () async {
-          Navigator.of(context).pop();
-          setState(() => _isLoading = true);
+        onPressed: isUnlocked
+            ? () async {
+                Navigator.of(context).pop();
+                setState(() => _isLoading = true);
 
-          // 플레이 횟수 증가
-          await PlayCounter.incrementPlayCount();
+                // 플레이 횟수 증가
+                await PlayCounter.incrementPlayCount();
 
-          // 3회 이상일 때만 광고 표시
-          bool shouldShowAd = await PlayCounter.shouldShowAd();
+                // 3회 이상일 때만 광고 표시
+                bool shouldShowAd = await PlayCounter.shouldShowAd();
 
-          if (shouldShowAd) {
-            InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
+                if (shouldShowAd) {
+                  InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
 
-            if (ad != null) {
-              ad.fullScreenContentCallback = FullScreenContentCallback(
-                onAdFailedToShowFullScreenContent: (ad, error) {
-                  print('!!! 전면 광고 표시 실패: ${error.message}');
-                  ad.dispose();
+                  if (ad != null) {
+                    ad.fullScreenContentCallback = FullScreenContentCallback(
+                      onAdFailedToShowFullScreenContent: (ad, error) {
+                        print('!!! 전면 광고 표시 실패: ${error.message}');
+                        ad.dispose();
+                        _startGameWithDifficulty(difficulty);
+                      },
+                      onAdDismissedFullScreenContent: (ad) {
+                        print('전면 광고 닫힘');
+                        ad.dispose();
+                        _startGameWithDifficulty(difficulty);
+                      },
+                    );
+                    ad.show();
+                  } else {
+                    print('!!! 전면 광고 로드 실패. 바로 게임을 시작합니다.');
+                    _startGameWithDifficulty(difficulty);
+                  }
+                } else {
+                  print('플레이 횟수 3회 미만, 광고 스킵');
                   _startGameWithDifficulty(difficulty);
-                },
-                onAdDismissedFullScreenContent: (ad) {
-                  print('전면 광고 닫힘');
-                  ad.dispose();
-                  _startGameWithDifficulty(difficulty);
-                },
-              );
-              ad.show();
-            } else {
-              print('!!! 전면 광고 로드 실패. 바로 게임을 시작합니다.');
-              _startGameWithDifficulty(difficulty);
-            }
-          } else {
-            print('플레이 횟수 3회 미만, 광고 스킵');
-            _startGameWithDifficulty(difficulty);
-          }
-        },
+                }
+              }
+            : null, // Disable button if locked
         style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
+          backgroundColor: isUnlocked ? color : Colors.grey,
+          foregroundColor: isUnlocked ? Colors.white : Colors.white60,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -226,13 +291,22 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         ),
         child: Column(
           children: [
-            Text(
-              label,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!isUnlocked) ...[
+                  const Icon(Icons.lock, size: 16),
+                  const SizedBox(width: 4),
+                ],
+                Text(
+                  label,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
             Text(
-              description,
+              isUnlocked ? description : progressText,
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.normal,

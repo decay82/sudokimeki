@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/daily_mission_storage.dart';
 import '../utils/ad_helper.dart';
+import '../utils/difficulty_unlock_storage.dart';
 import '../data/puzzle_data.dart';
 import 'dart:math';
 import 'sudoku_screen.dart';
@@ -308,45 +309,160 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
   void _showDifficultyDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('난이도 선택'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildDifficultyButton('입문자', 'beginner', Colors.lightBlue),
-            const SizedBox(height: 8),
-            _buildDifficultyButton('초보자', 'rookie', Colors.cyan),
-            const SizedBox(height: 8),
-            _buildDifficultyButton('초급', 'easy', Colors.green),
-            const SizedBox(height: 8),
-            _buildDifficultyButton('중급', 'medium', Colors.orange),
-            const SizedBox(height: 8),
-            _buildDifficultyButton('고급', 'hard', Colors.red),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        return FutureBuilder<Map<String, bool>>(
+          future: _checkAllDifficultiesUnlocked(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const AlertDialog(
+                content: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+
+            final unlockStatus = snapshot.data!;
+
+            return FutureBuilder<Map<String, String>>(
+              future: _getAllProgressTexts(),
+              builder: (context, progressSnapshot) {
+                if (!progressSnapshot.hasData) {
+                  return const AlertDialog(
+                    content: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+
+                final progressTexts = progressSnapshot.data!;
+
+                return AlertDialog(
+                  title: const Text('난이도 선택'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildDifficultyButton(
+                        '입문자',
+                        'beginner',
+                        Colors.lightBlue,
+                        unlockStatus['beginner'] ?? true,
+                        progressTexts['beginner'] ?? '',
+                      ),
+                      const SizedBox(height: 8),
+                      _buildDifficultyButton(
+                        '초보자',
+                        'rookie',
+                        Colors.cyan,
+                        unlockStatus['rookie'] ?? true,
+                        progressTexts['rookie'] ?? '',
+                      ),
+                      const SizedBox(height: 8),
+                      _buildDifficultyButton(
+                        '초급',
+                        'easy',
+                        Colors.green,
+                        unlockStatus['easy'] ?? false,
+                        progressTexts['easy'] ?? '',
+                      ),
+                      const SizedBox(height: 8),
+                      _buildDifficultyButton(
+                        '중급',
+                        'medium',
+                        Colors.orange,
+                        unlockStatus['medium'] ?? false,
+                        progressTexts['medium'] ?? '',
+                      ),
+                      const SizedBox(height: 8),
+                      _buildDifficultyButton(
+                        '고급',
+                        'hard',
+                        Colors.red,
+                        unlockStatus['hard'] ?? false,
+                        progressTexts['hard'] ?? '',
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('취소'),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 
-  Widget _buildDifficultyButton(String label, String difficulty, Color color) {
+  Future<Map<String, bool>> _checkAllDifficultiesUnlocked() async {
+    return {
+      'beginner': await DifficultyUnlockStorage.isUnlocked('beginner'),
+      'rookie': await DifficultyUnlockStorage.isUnlocked('rookie'),
+      'easy': await DifficultyUnlockStorage.isUnlocked('easy'),
+      'medium': await DifficultyUnlockStorage.isUnlocked('medium'),
+      'hard': await DifficultyUnlockStorage.isUnlocked('hard'),
+    };
+  }
+
+  Future<Map<String, String>> _getAllProgressTexts() async {
+    return {
+      'beginner': await DifficultyUnlockStorage.getUnlockProgressText('beginner'),
+      'rookie': await DifficultyUnlockStorage.getUnlockProgressText('rookie'),
+      'easy': await DifficultyUnlockStorage.getUnlockProgressText('easy'),
+      'medium': await DifficultyUnlockStorage.getUnlockProgressText('medium'),
+      'hard': await DifficultyUnlockStorage.getUnlockProgressText('hard'),
+    };
+  }
+
+  Widget _buildDifficultyButton(
+    String label,
+    String difficulty,
+    Color color,
+    bool isUnlocked,
+    String progressText,
+  ) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
+          backgroundColor: isUnlocked ? color : Colors.grey,
+          foregroundColor: isUnlocked ? Colors.white : Colors.white60,
+          padding: const EdgeInsets.symmetric(vertical: 12),
         ),
-        onPressed: () {
-          Navigator.pop(context);
-          _startMission(difficulty);
-        },
-        child: Text(label),
+        onPressed: isUnlocked
+            ? () {
+                Navigator.pop(context);
+                _startMission(difficulty);
+              }
+            : null,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!isUnlocked) ...[
+                  const Icon(Icons.lock, size: 14),
+                  const SizedBox(width: 4),
+                ],
+                Text(
+                  label,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            if (!isUnlocked && progressText.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                progressText,
+                style: const TextStyle(fontSize: 11),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
