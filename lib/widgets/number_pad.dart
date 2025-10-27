@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/sudoku_game.dart';
+import '../l10n/app_localizations.dart';
 
 class NumberPad extends StatelessWidget {
   const NumberPad({super.key});
@@ -25,6 +26,7 @@ class NumberPad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final game = context.watch<SudokuGame>();
+    final l10n = AppLocalizations.of(context)!;
 
     return SingleChildScrollView(
       child: Container(
@@ -45,7 +47,7 @@ class NumberPad extends StatelessWidget {
                       game.isSmartInputMode ? Icons.touch_app : Icons.touch_app_outlined,
                       size: 13,
                     ),
-                    label: game.isSmartInputMode ? '스마트\nON' : '스마트',
+                    label: game.isSmartInputMode ? l10n.smartOn : l10n.smart,
                     isActive: game.isSmartInputMode,
                     activeColor: Colors.purple,
                   ),
@@ -59,7 +61,7 @@ class NumberPad extends StatelessWidget {
                       game.isMemoMode ? Icons.edit : Icons.edit_outlined,
                       size: 13,
                     ),
-                    label: game.isMemoMode ? '메모\nON' : '메모',
+                    label: game.isMemoMode ? l10n.memoOn : l10n.memo,
                     isActive: game.isMemoMode,
                     activeColor: Colors.orange,
                   ),
@@ -70,7 +72,7 @@ class NumberPad extends StatelessWidget {
                   child: _buildFunctionButton(
                     onPressed: game.clearCell,
                     icon: const Icon(Icons.clear, size: 13),
-                    label: '삭제',
+                    label: l10n.delete,
                     isActive: false,
                     activeColor: Colors.red,
                     backgroundColor: Colors.red,
@@ -85,10 +87,10 @@ class NumberPad extends StatelessWidget {
                         ? const Icon(Icons.play_circle_outline, size: 13)
                         : null,
                     label: game.isHintMode
-                        ? '힌트\nON'
+                        ? l10n.hintOn
                         : game.hintsAvailable > 0
-                            ? '힌트\n+${game.hintsAvailable}'
-                            : '힌트',
+                            ? l10n.hintPlus(game.hintsAvailable)
+                            : l10n.hint,
                     isActive: game.isHintMode,
                     activeColor: Colors.amber,
                   ),

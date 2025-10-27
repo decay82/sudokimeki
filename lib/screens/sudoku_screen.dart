@@ -12,6 +12,7 @@ import '../widgets/sudoku_board.dart';
 import '../widgets/number_pad.dart';
 import '../data/puzzle_data.dart';
 import '../utils/daily_mission_storage.dart';
+import '../l10n/app_localizations.dart';
 import 'main_screen.dart';
 
 class SudokuScreen extends StatefulWidget {
@@ -128,17 +129,19 @@ class _SudokuScreenState extends State<SudokuScreen> {
 
     if (!mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Row(
+              title: Row(
                 children: [
-                  Icon(Icons.settings, size: 28),
-                  SizedBox(width: 8),
-                  Text('옵션'),
+                  const Icon(Icons.settings, size: 28),
+                  const SizedBox(width: 8),
+                  Text(l10n.options),
                 ],
               ),
               content: Column(
@@ -147,13 +150,13 @@ class _SudokuScreenState extends State<SudokuScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.volume_up, size: 24),
-                          SizedBox(width: 8),
+                          const Icon(Icons.volume_up, size: 24),
+                          const SizedBox(width: 8),
                           Text(
-                            '효과음',
-                            style: TextStyle(fontSize: 16),
+                            l10n.soundEffects,
+                            style: const TextStyle(fontSize: 16),
                           ),
                         ],
                       ),
@@ -175,7 +178,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('닫기'),
+                  child: Text(l10n.close),
                 ),
               ],
             );
@@ -186,6 +189,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
   }
 
   void _showGameOverDialog(BuildContext context, SudokuGame game) {
+    final l10n = AppLocalizations.of(context)!;
+
     game.pauseTimer();
     showDialog(
       context: context,
@@ -194,28 +199,28 @@ class _SudokuScreenState extends State<SudokuScreen> {
         return PopScope(
           canPop: false,
           child: AlertDialog(
-            title: const Row(
+            title: Row(
               children: [
-                Icon(Icons.heart_broken, color: Colors.red, size: 32),
-                SizedBox(width: 8),
-                Text('게임 오버'),
+                const Icon(Icons.heart_broken, color: Colors.red, size: 32),
+                const SizedBox(width: 8),
+                Text(l10n.gameOver),
               ],
             ),
-            content: const Column(
+            content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.dangerous, color: Colors.red, size: 80),
-                SizedBox(height: 16),
+                const Icon(Icons.dangerous, color: Colors.red, size: 80),
+                const SizedBox(height: 16),
                 Text(
-                  '3회 실수하면 게임이 종료됩니다.',
+                  l10n.gameOverMessage,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
-                  '광고를 끝까지 시청해야 하트를 받을 수 있습니다.',
+                  l10n.watchAdToGetHeart,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
@@ -269,7 +274,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
                       }
                     },
                     icon: const Icon(Icons.videocam),
-                    label: const Text('광고 시청 후 하트 3개 충전'),
+                    label: Text(l10n.adWatchHeartRecharge),
                   ),
                   TextButton.icon(
                     onPressed: () async {
@@ -317,7 +322,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
                       }
                     },
                     icon: const Icon(Icons.restart_alt),
-                    label: const Text('다시 시작'),
+                    label: Text(l10n.restart),
                   ),
                   TextButton.icon(
                     onPressed: () {
@@ -329,7 +334,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
                       );
                     },
                     icon: const Icon(Icons.home),
-                    label: const Text('홈'),
+                    label: Text(l10n.home),
                   ),
                 ],
               ),
@@ -354,6 +359,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
     }
 
     if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context)!;
 
     // 컨페티 시작
     _confettiController.play();
@@ -402,9 +409,9 @@ class _SudokuScreenState extends State<SudokuScreen> {
                     ),
                     child: Column(
                       children: [
-                        const Text(
-                          '총 점수',
-                          style: TextStyle(
+                        Text(
+                          l10n.totalScore,
+                          style: const TextStyle(
                             fontSize: 16,
                             color: Colors.black54,
                           ),
@@ -423,7 +430,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    '기록: $timeString',
+                    l10n.record(timeString),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -439,7 +446,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
                       Navigator.of(context).pop(); // 다이얼로그 닫기
                       Navigator.of(context).pop(); // 일일 미션 화면으로 돌아가기
                     },
-                    child: const Text('홈'),
+                    child: Text(l10n.home),
                   ),
                 ] else ...[
                   TextButton(
@@ -448,7 +455,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
                       Navigator.of(context).pop();
                       _showDifficultySelectionDialog(context, game);
                     },
-                    child: const Text('다음 스테이지'),
+                    child: Text(l10n.nextStage),
                   ),
                   TextButton(
                     onPressed: () {
@@ -460,7 +467,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
                         ),
                       );
                     },
-                    child: const Text('홈'),
+                    child: Text(l10n.home),
                   ),
                 ],
               ],
@@ -472,14 +479,16 @@ class _SudokuScreenState extends State<SudokuScreen> {
   }
 
   void _showDifficultySelectionDialog(BuildContext context, SudokuGame game) {
+    final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text(
-            '난이도 선택',
+          title: Text(
+            l10n.selectDifficulty,
             textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -487,8 +496,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButton(
                 context: context,
                 game: game,
-                label: '입문자',
-                description: 'Beginner - 처음 시작하는 난이도',
+                label: l10n.difficultyBeginner,
+                description: l10n.difficultyBeginnerDesc,
                 color: Colors.lightBlue,
                 difficulty: 'beginner',
               ),
@@ -496,8 +505,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButton(
                 context: context,
                 game: game,
-                label: '초보자',
-                description: 'Rookie - 연습하기 좋은 난이도',
+                label: l10n.difficultyRookie,
+                description: l10n.difficultyRookieDesc,
                 color: Colors.cyan,
                 difficulty: 'rookie',
               ),
@@ -505,8 +514,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButton(
                 context: context,
                 game: game,
-                label: '초급',
-                description: 'Easy - 쉬운 난이도',
+                label: l10n.difficultyEasy,
+                description: l10n.difficultyEasyDesc,
                 color: Colors.green,
                 difficulty: 'easy',
               ),
@@ -514,8 +523,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButton(
                 context: context,
                 game: game,
-                label: '중급',
-                description: 'Medium - 보통 난이도',
+                label: l10n.difficultyMedium,
+                description: l10n.difficultyMediumDesc,
                 color: Colors.orange,
                 difficulty: 'medium',
               ),
@@ -523,8 +532,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButton(
                 context: context,
                 game: game,
-                label: '고급',
-                description: 'Hard - 어려운 난이도',
+                label: l10n.difficultyHard,
+                description: l10n.difficultyHardDesc,
                 color: Colors.red,
                 difficulty: 'hard',
               ),
@@ -533,7 +542,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('취소'),
+              child: Text(l10n.cancel),
             ),
           ],
         );
@@ -542,14 +551,16 @@ class _SudokuScreenState extends State<SudokuScreen> {
   }
 
   void _showDifficultySelectionDialogFromGameOver(BuildContext context, SudokuGame game) {
+    final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text(
-            '난이도 선택',
+          title: Text(
+            l10n.selectDifficulty,
             textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -557,8 +568,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButtonFromGameOver(
                 context: context,
                 game: game,
-                label: '입문자',
-                description: 'Beginner - 처음 시작하는 난이도',
+                label: l10n.difficultyBeginner,
+                description: l10n.difficultyBeginnerDesc,
                 color: Colors.lightBlue,
                 difficulty: 'beginner',
               ),
@@ -566,8 +577,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButtonFromGameOver(
                 context: context,
                 game: game,
-                label: '초보자',
-                description: 'Rookie - 연습하기 좋은 난이도',
+                label: l10n.difficultyRookie,
+                description: l10n.difficultyRookieDesc,
                 color: Colors.cyan,
                 difficulty: 'rookie',
               ),
@@ -575,8 +586,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButtonFromGameOver(
                 context: context,
                 game: game,
-                label: '초급',
-                description: 'Easy - 쉬운 난이도',
+                label: l10n.difficultyEasy,
+                description: l10n.difficultyEasyDesc,
                 color: Colors.green,
                 difficulty: 'easy',
               ),
@@ -584,8 +595,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButtonFromGameOver(
                 context: context,
                 game: game,
-                label: '중급',
-                description: 'Medium - 보통 난이도',
+                label: l10n.difficultyMedium,
+                description: l10n.difficultyMediumDesc,
                 color: Colors.orange,
                 difficulty: 'medium',
               ),
@@ -593,8 +604,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButtonFromGameOver(
                 context: context,
                 game: game,
-                label: '고급',
-                description: 'Hard - 어려운 난이도',
+                label: l10n.difficultyHard,
+                description: l10n.difficultyHardDesc,
                 color: Colors.red,
                 difficulty: 'hard',
               ),
@@ -606,7 +617,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 Navigator.of(context).pop();
                 _showGameOverDialog(context, game);
               },
-              child: const Text('취소'),
+              child: Text(l10n.cancel),
             ),
           ],
         );
@@ -809,25 +820,26 @@ class _SudokuScreenState extends State<SudokuScreen> {
   @override
   Widget build(BuildContext context) {
     final game = context.watch<SudokuGame>();
+    final l10n = AppLocalizations.of(context)!;
 
-    String difficultyText = '알 수 없음';
+    String difficultyText = l10n.unknown;
     if (game.currentStage < PuzzleData.difficulties.length) {
       final difficulty = PuzzleData.difficulties[game.currentStage];
       switch (difficulty) {
         case 'beginner':
-          difficultyText = '입문자';
+          difficultyText = l10n.difficultyBeginner;
           break;
         case 'rookie':
-          difficultyText = '초보자';
+          difficultyText = l10n.difficultyRookie;
           break;
         case 'easy':
-          difficultyText = '초급';
+          difficultyText = l10n.difficultyEasy;
           break;
         case 'medium':
-          difficultyText = '중급';
+          difficultyText = l10n.difficultyMedium;
           break;
         case 'hard':
-          difficultyText = '고급';
+          difficultyText = l10n.difficultyHard;
           break;
         default:
           difficultyText = difficulty;

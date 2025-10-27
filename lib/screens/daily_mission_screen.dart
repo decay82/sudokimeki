@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../utils/daily_mission_storage.dart';
 import '../utils/ad_helper.dart';
 import '../utils/difficulty_unlock_storage.dart';
+import '../utils/localization_helper.dart';
+import '../l10n/app_localizations.dart';
 import '../data/puzzle_data.dart';
 import 'dart:math';
 import 'sudoku_screen.dart';
@@ -307,6 +309,8 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
   }
 
   void _showDifficultyDialog() {
+    final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (context) {
@@ -324,7 +328,7 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
             final unlockStatus = snapshot.data!;
 
             return FutureBuilder<Map<String, String>>(
-              future: _getAllProgressTexts(),
+              future: _getAllProgressTexts(context),
               builder: (context, progressSnapshot) {
                 if (!progressSnapshot.hasData) {
                   return const AlertDialog(
@@ -337,12 +341,12 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                 final progressTexts = progressSnapshot.data!;
 
                 return AlertDialog(
-                  title: const Text('난이도 선택'),
+                  title: Text(l10n.selectDifficulty),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _buildDifficultyButton(
-                        '입문자',
+                        l10n.difficultyBeginner,
                         'beginner',
                         Colors.lightBlue,
                         unlockStatus['beginner'] ?? true,
@@ -350,7 +354,7 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                       ),
                       const SizedBox(height: 8),
                       _buildDifficultyButton(
-                        '초보자',
+                        l10n.difficultyRookie,
                         'rookie',
                         Colors.cyan,
                         unlockStatus['rookie'] ?? true,
@@ -358,7 +362,7 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                       ),
                       const SizedBox(height: 8),
                       _buildDifficultyButton(
-                        '초급',
+                        l10n.difficultyEasy,
                         'easy',
                         Colors.green,
                         unlockStatus['easy'] ?? false,
@@ -366,7 +370,7 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                       ),
                       const SizedBox(height: 8),
                       _buildDifficultyButton(
-                        '중급',
+                        l10n.difficultyMedium,
                         'medium',
                         Colors.orange,
                         unlockStatus['medium'] ?? false,
@@ -374,7 +378,7 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                       ),
                       const SizedBox(height: 8),
                       _buildDifficultyButton(
-                        '고급',
+                        l10n.difficultyHard,
                         'hard',
                         Colors.red,
                         unlockStatus['hard'] ?? false,
@@ -385,7 +389,7 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('취소'),
+                      child: Text(l10n.cancel),
                     ),
                   ],
                 );
@@ -407,13 +411,13 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
     };
   }
 
-  Future<Map<String, String>> _getAllProgressTexts() async {
+  Future<Map<String, String>> _getAllProgressTexts(BuildContext context) async {
     return {
-      'beginner': await DifficultyUnlockStorage.getUnlockProgressText('beginner'),
-      'rookie': await DifficultyUnlockStorage.getUnlockProgressText('rookie'),
-      'easy': await DifficultyUnlockStorage.getUnlockProgressText('easy'),
-      'medium': await DifficultyUnlockStorage.getUnlockProgressText('medium'),
-      'hard': await DifficultyUnlockStorage.getUnlockProgressText('hard'),
+      'beginner': await DifficultyUnlockStorage.getUnlockProgressText(context, 'beginner'),
+      'rookie': await DifficultyUnlockStorage.getUnlockProgressText(context, 'rookie'),
+      'easy': await DifficultyUnlockStorage.getUnlockProgressText(context, 'easy'),
+      'medium': await DifficultyUnlockStorage.getUnlockProgressText(context, 'medium'),
+      'hard': await DifficultyUnlockStorage.getUnlockProgressText(context, 'hard'),
     };
   }
 
@@ -496,10 +500,12 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: widget.showAppBar
           ? AppBar(
-              title: const Text('일일 미션'),
+              title: Text(l10n.dailyMission),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.emoji_events),
@@ -525,9 +531,9 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        '일일 미션',
-                        style: TextStyle(
+                      Text(
+                        l10n.dailyMission,
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
@@ -582,7 +588,7 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                               ),
                               // 월 표시
                               Text(
-                                '${_currentMonth.year}년 ${_currentMonth.month}월',
+                                l10n.yearMonth(_currentMonth.year, _currentMonth.month),
                                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                               // 다음 월 버튼
@@ -607,7 +613,7 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                           ),
                           SizedBox(height: bottomSpacing),
                           Text(
-                            _hasTrophy ? '완료' : '모든 미션을 클리어하세요',
+                            _hasTrophy ? l10n.completed : l10n.clearAllMissions,
                             style: TextStyle(
                               fontSize: 16,
                               color: _hasTrophy ? Colors.amber : Colors.grey,
@@ -650,16 +656,16 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
               children: [
                 // 요일 헤더
                 SizedBox(
-                  height: cellSize * 0.8, // 요일 헤더 높이 조정
+                  height: cellSize * 0.7, // 요일 헤더 높이 줄임
                   child: Row(
                     children: [
-                      for (final day in ['일', '월', '화', '수', '목', '금', '토'])
+                      for (final dayNum in [7, 1, 2, 3, 4, 5, 6])
                         Expanded(
                           child: Center(
                             child: Text(
-                              day,
+                              getDayName(context, dayNum),
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 13, // 16 → 13 (약 20% 감소)
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFFB0B2B7),
                               ),
@@ -669,7 +675,7 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6), // 8 → 6
                 // 날짜 그리드
                 GridView.builder(
                   shrinkWrap: true,
@@ -677,9 +683,9 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 7,
                     childAspectRatio: 1,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    mainAxisExtent: cellSize, // 셀의 높이를 명시적으로 설정
+                    crossAxisSpacing: 6, // 8 → 6
+                    mainAxisSpacing: 6, // 8 → 6
+                    mainAxisExtent: cellSize * 0.95, // 셀 높이도 약간 줄임
                   ),
                   itemCount: firstWeekday % 7 + daysInMonth,
                   itemBuilder: (context, index) {
@@ -699,14 +705,14 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: _getStatusColor(status),
-                          border: isSelected ? Border.all(color: Colors.black, width: 3) : null,
+                          border: isSelected ? Border.all(color: Colors.black, width: 2.5) : null, // 3 → 2.5
                           shape: BoxShape.circle,
                         ),
                         child: Center(
                           child: Text(
                             '$day',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 13, // 16 → 13 (약 20% 감소)
                               fontWeight: FontWeight.bold,
                               color: _getTextColor(status),
                             ),
@@ -725,20 +731,8 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
   }
 
   String _getDifficultyText(String? difficulty) {
-    switch (difficulty) {
-      case 'beginner':
-        return '입문자';
-      case 'rookie':
-        return '초보자';
-      case 'easy':
-        return '초급';
-      case 'medium':
-        return '중급';
-      case 'hard':
-        return '고급';
-      default:
-        return '알 수 없음';
-    }
+    if (difficulty == null) return AppLocalizations.of(context)!.difficultyUnknown;
+    return getDifficultyName(context, difficulty);
   }
 
   String _formatTime(int? seconds) {
@@ -759,6 +753,8 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
     final isCompleted = mission?.status == DayStatus.completed;
 
     if (isCompleted) {
+      final l10n = AppLocalizations.of(context)!;
+
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -772,9 +768,9 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
               children: [
                 const Icon(Icons.check_circle, color: Colors.blue, size: 24),
                 const SizedBox(width: 8),
-                const Text(
-                  '완료된 미션',
-                  style: TextStyle(
+                Text(
+                  l10n.completedMission,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.blue,
@@ -788,9 +784,9 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
               children: [
                 Column(
                   children: [
-                    const Text(
-                      '난이도',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    Text(
+                      l10n.difficulty,
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -809,9 +805,9 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                 ),
                 Column(
                   children: [
-                    const Text(
-                      '클리어 시간',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    Text(
+                      l10n.clearTime,
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -829,6 +825,8 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
         ),
       );
     }
+
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -849,7 +847,7 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
             ],
             const Icon(Icons.play_arrow),
             const SizedBox(width: 8),
-            const Text('플레이', style: TextStyle(fontSize: 18)),
+            Text(l10n.play, style: const TextStyle(fontSize: 18)),
           ],
         ),
       ),

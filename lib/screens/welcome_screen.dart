@@ -8,6 +8,8 @@ import '../utils/game_storage.dart';
 import '../utils/ad_helper.dart';
 import '../utils/play_counter.dart';
 import '../utils/difficulty_unlock_storage.dart';
+import '../utils/localization_helper.dart';
+import '../l10n/app_localizations.dart';
 import '../data/puzzle_data.dart';
 import 'sudoku_screen.dart';
 
@@ -47,162 +49,166 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
   }
 
-  Future<void> _checkSavedGame() async {
-    final hasSaved = await GameStorage.hasSavedGame();
+ Future<void> _checkSavedGame() async {
+  final hasSaved = await GameStorage.hasSavedGame();
 
-    if (hasSaved) {
-      final savedData = await GameStorage.loadGame();
-      if (savedData != null) {
-        final currentStage = savedData['currentStage'] as int;
-        final elapsedSeconds = savedData['elapsedSeconds'] as int;
+  if (hasSaved) {
+    final savedData = await GameStorage.loadGame();
+    if (savedData != null) {
+      final currentStage = savedData['currentStage'] as int;
+      final elapsedSeconds = savedData['elapsedSeconds'] as int;
 
-        String difficultyText = '알 수 없음';
-        if (currentStage < PuzzleData.difficulties.length) {
-          final difficulty = PuzzleData.difficulties[currentStage];
-          switch (difficulty) {
-            case 'beginner':
-              difficultyText = '입문자';
-              break;
-            case 'rookie':
-              difficultyText = '초보자';
-              break;
-            case 'easy':
-              difficultyText = '초급';
-              break;
-            case 'medium':
-              difficultyText = '중급';
-              break;
-            case 'hard':
-              difficultyText = '고급';
-              break;
-          }
+      // ✅ l10n을 여기서 먼저 가져오기
+      final l10n = AppLocalizations.of(context)!;
+
+      String difficultyText = l10n.difficultyUnknown;  // ✅ '알 수 없음' 번역
+      if (currentStage < PuzzleData.difficulties.length) {
+        final difficulty = PuzzleData.difficulties[currentStage];
+        switch (difficulty) {
+          case 'beginner':
+            difficultyText = l10n.difficultyBeginner;  // ✅ difficultyText = 추가
+            break;
+          case 'rookie':
+            difficultyText = l10n.difficultyRookie;  // ✅ difficultyText = 추가, ) 제거
+            break;
+          case 'easy':
+            difficultyText = l10n.difficultyEasy;  // ✅ 번역 적용
+            break;
+          case 'medium':
+            difficultyText = l10n.difficultyMedium;  // ✅ 번역 적용
+            break;
+          case 'hard':
+            difficultyText = l10n.difficultyHard;  // ✅ 번역 적용
+            break;
         }
-
-        final minutes = elapsedSeconds ~/ 60;
-        final seconds = elapsedSeconds % 60;
-        final timeText =
-            '${minutes.toString().padLeft(3, '0')}:${seconds.toString().padLeft(2, '0')}';
-
-        setState(() {
-          _hasSavedGame = true;
-          _savedGameInfo = '$difficultyText / $timeText';
-        });
-      } else {
-        setState(() {
-          _hasSavedGame = false;
-        });
       }
+
+      final minutes = elapsedSeconds ~/ 60;
+      final seconds = elapsedSeconds % 60;
+      final timeText =
+          '${minutes.toString().padLeft(3, '0')}:${seconds.toString().padLeft(2, '0')}';
+
+      setState(() {
+        _hasSavedGame = true;
+        _savedGameInfo = '$difficultyText / $timeText';
+      });
     } else {
       setState(() {
         _hasSavedGame = false;
       });
     }
+  } else {
+    setState(() {
+      _hasSavedGame = false;
+    });
   }
+}
 
   void _showDifficultyDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return FutureBuilder<Map<String, bool>>(
-          future: _checkAllDifficultiesUnlocked(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const AlertDialog(
-                content: Center(
-                  child: CircularProgressIndicator(),
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return FutureBuilder<Map<String, bool>>(
+        future: _checkAllDifficultiesUnlocked(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const AlertDialog(
+              content: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+
+          final unlockStatus = snapshot.data!;
+          final l10n = AppLocalizations.of(context)!;  // ✅ 이미 선언하셨네요!
+
+          return FutureBuilder<Map<String, String>>(
+            future: _getAllProgressTexts(context),
+            builder: (context, progressSnapshot) {
+              if (!progressSnapshot.hasData) {
+                return const AlertDialog(
+                  content: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              final progressTexts = progressSnapshot.data!;
+
+              return AlertDialog(
+                title: Text(  // ✅ const 제거 (l10n은 const가 아니므로)
+                  l10n.selectDifficulty,  // ✅ '난이도 선택' → 번역 키
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-              );
-            }
-
-            final unlockStatus = snapshot.data!;
-
-            return FutureBuilder<Map<String, String>>(
-              future: _getAllProgressTexts(),
-              builder: (context, progressSnapshot) {
-                if (!progressSnapshot.hasData) {
-                  return const AlertDialog(
-                    content: Center(
-                      child: CircularProgressIndicator(),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildDifficultyButton(
+                      context: context,
+                      label: l10n.difficultyBeginner,  // ✅ '입문자' → 번역 키
+                      description: l10n.difficultyBeginnerDesc,  // ✅ 설명도 번역
+                      color: Colors.lightBlue,
+                      difficulty: 'beginner',
+                      isUnlocked: unlockStatus['beginner'] ?? true,
+                      progressText: progressTexts['beginner'] ?? '',
                     ),
-                  );
-                }
-
-                final progressTexts = progressSnapshot.data!;
-
-                return AlertDialog(
-                  title: const Text(
-                    '난이도 선택',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildDifficultyButton(
-                        context: context,
-                        label: '입문자',
-                        description: 'Beginner - 처음 시작하는 난이도',
-                        color: Colors.lightBlue,
-                        difficulty: 'beginner',
-                        isUnlocked: unlockStatus['beginner'] ?? true,
-                        progressText: progressTexts['beginner'] ?? '',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildDifficultyButton(
-                        context: context,
-                        label: '초보자',
-                        description: 'Rookie - 연습하기 좋은 난이도',
-                        color: Colors.cyan,
-                        difficulty: 'rookie',
-                        isUnlocked: unlockStatus['rookie'] ?? true,
-                        progressText: progressTexts['rookie'] ?? '',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildDifficultyButton(
-                        context: context,
-                        label: '초급',
-                        description: 'Easy - 쉬운 난이도',
-                        color: Colors.green,
-                        difficulty: 'easy',
-                        isUnlocked: unlockStatus['easy'] ?? false,
-                        progressText: progressTexts['easy'] ?? '',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildDifficultyButton(
-                        context: context,
-                        label: '중급',
-                        description: 'Medium - 보통 난이도',
-                        color: Colors.orange,
-                        difficulty: 'medium',
-                        isUnlocked: unlockStatus['medium'] ?? false,
-                        progressText: progressTexts['medium'] ?? '',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildDifficultyButton(
-                        context: context,
-                        label: '고급',
-                        description: 'Hard - 어려운 난이도',
-                        color: Colors.red,
-                        difficulty: 'hard',
-                        isUnlocked: unlockStatus['hard'] ?? false,
-                        progressText: progressTexts['hard'] ?? '',
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('취소'),
+                    const SizedBox(height: 12),
+                    _buildDifficultyButton(
+                      context: context,
+                      label: l10n.difficultyRookie,  // ✅ '초보자' → 번역 키
+                      description: l10n.difficultyRookieDesc,  // ✅ 설명도 번역
+                      color: Colors.cyan,
+                      difficulty: 'rookie',
+                      isUnlocked: unlockStatus['rookie'] ?? true,
+                      progressText: progressTexts['rookie'] ?? '',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDifficultyButton(
+                      context: context,
+                      label: l10n.difficultyEasy,  // ✅ '초급' → 번역 키
+                      description: l10n.difficultyEasyDesc,  // ✅ 설명도 번역
+                      color: Colors.green,
+                      difficulty: 'easy',
+                      isUnlocked: unlockStatus['easy'] ?? false,
+                      progressText: progressTexts['easy'] ?? '',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDifficultyButton(
+                      context: context,
+                      label: l10n.difficultyMedium,  // ✅ '중급' → 번역 키
+                      description: l10n.difficultyMediumDesc,  // ✅ 설명도 번역
+                      color: Colors.orange,
+                      difficulty: 'medium',
+                      isUnlocked: unlockStatus['medium'] ?? false,
+                      progressText: progressTexts['medium'] ?? '',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDifficultyButton(
+                      context: context,
+                      label: l10n.difficultyHard,  // ✅ '고급' → 번역 키
+                      description: l10n.difficultyHardDesc,  // ✅ 설명도 번역
+                      color: Colors.red,
+                      difficulty: 'hard',
+                      isUnlocked: unlockStatus['hard'] ?? false,
+                      progressText: progressTexts['hard'] ?? '',
                     ),
                   ],
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  }
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l10n.cancel),  // ✅ '취소' → 번역 키, const 제거
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+    },
+  );
+}
 
   Future<Map<String, bool>> _checkAllDifficultiesUnlocked() async {
     return {
@@ -214,13 +220,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     };
   }
 
-  Future<Map<String, String>> _getAllProgressTexts() async {
+  Future<Map<String, String>> _getAllProgressTexts(BuildContext context) async {
     return {
-      'beginner': await DifficultyUnlockStorage.getUnlockProgressText('beginner'),
-      'rookie': await DifficultyUnlockStorage.getUnlockProgressText('rookie'),
-      'easy': await DifficultyUnlockStorage.getUnlockProgressText('easy'),
-      'medium': await DifficultyUnlockStorage.getUnlockProgressText('medium'),
-      'hard': await DifficultyUnlockStorage.getUnlockProgressText('hard'),
+      'beginner': await DifficultyUnlockStorage.getUnlockProgressText(context, 'beginner'),
+      'rookie': await DifficultyUnlockStorage.getUnlockProgressText(context, 'rookie'),
+      'easy': await DifficultyUnlockStorage.getUnlockProgressText(context, 'easy'),
+      'medium': await DifficultyUnlockStorage.getUnlockProgressText(context, 'medium'),
+      'hard': await DifficultyUnlockStorage.getUnlockProgressText(context, 'hard'),
     };
   }
 
@@ -311,37 +317,45 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
-  void _startGameWithDifficulty(String difficulty) async {
-    final game = context.read<SudokuGame>();
+ void _startGameWithDifficulty(String difficulty) async {
+  final game = context.read<SudokuGame>();
 
-    await GameStorage.clearSavedGame();
+  await GameStorage.clearSavedGame();
 
-    final puzzlesOfDifficulty = <int>[];
-    for (int i = 0; i < PuzzleData.difficulties.length; i++) {
-      if (PuzzleData.difficulties[i] == difficulty) {
-        puzzlesOfDifficulty.add(i);
-      }
+  final puzzlesOfDifficulty = <int>[];
+  for (int i = 0; i < PuzzleData.difficulties.length; i++) {
+    if (PuzzleData.difficulties[i] == difficulty) {
+      puzzlesOfDifficulty.add(i);
     }
-
-    if (puzzlesOfDifficulty.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$difficulty 난이도의 퍼즐이 없습니다.')),
-      );
-      return;
-    }
-
-    final random = Random();
-    final randomStage =
-        puzzlesOfDifficulty[random.nextInt(puzzlesOfDifficulty.length)];
-
-    game.loadStage(randomStage, difficulty: difficulty);
-
-    if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const SudokuScreen()),
-    );
   }
+
+  if (puzzlesOfDifficulty.isEmpty) {
+    if (!mounted) return;
+    
+    // ✅ l10n 추가
+    final l10n = AppLocalizations.of(context)!;
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.noPuzzlesForDifficulty(
+          getDifficultyName(context, difficulty)  // ✅ 난이도 이름을 번역해서 전달
+        )),
+      ),
+    );
+    return;
+  }
+
+  final random = Random();
+  final randomStage =
+      puzzlesOfDifficulty[random.nextInt(puzzlesOfDifficulty.length)];
+
+  game.loadStage(randomStage, difficulty: difficulty);
+
+  if (!mounted) return;
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute(builder: (context) => const SudokuScreen()),
+  );
+}
 
   void _continueGame(BuildContext context) async {
     final game = context.read<SudokuGame>();
@@ -405,142 +419,144 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF6B4FFF),
-                  Color(0xFF9D7EFF),
-                  Color(0xFFD4C5FF),
-                ],
-              ),
+ @override
+Widget build(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;  // ✅ l10n 선언
+  
+  return Scaffold(
+    body: Stack(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF6B4FFF),
+                Color(0xFF9D7EFF),
+                Color(0xFFD4C5FF),
+              ],
             ),
-            child: SafeArea(
-              child: Stack(
-                children: [
-                  Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Spacer(flex: 2),
+          ),
+          child: SafeArea(
+            child: Stack(
+              children: [
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Spacer(flex: 2),
 
-                    const Text(
-                      'Sudoku',
-                      style: TextStyle(
-                        fontSize: 72,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 4,
+                      const Text(
+                        'Sudoku',
+                        style: TextStyle(
+                          fontSize: 72,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 4,
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 8),
+                      const SizedBox(height: 8),
 
-                    const Text(
-                      '스도쿠 퍼즐 게임',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white70,
-                        letterSpacing: 2,
+                      Text(  // ✅ const 제거
+                        l10n.sudokuPuzzleGame,  // ✅ '스도쿠 퍼즐 게임' → 번역 키
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.white70,
+                          letterSpacing: 2,
+                        ),
                       ),
-                    ),
 
-                    const Spacer(flex: 3),
+                      const Spacer(flex: 3),
 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            width: double.infinity,
-                            height: 60,
-                            child: ElevatedButton(
-                              onPressed: _showDifficultyDialog,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.primary,
-                                elevation: 8,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              height: 60,
+                              child: ElevatedButton(
+                                onPressed: _showDifficultyDialog,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                  elevation: 8,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
                                 ),
-                              ),
-                              child: const Text(
-                                '새로 시작',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
+                                child: Text(  // ✅ const 제거
+                                  l10n.newGame,  // ✅ '새로 시작' → 번역 키
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
 
-                          const SizedBox(height: 20),
+                            const SizedBox(height: 20),
 
-                          SizedBox(
-                            width: double.infinity,
-                            height: 60,
-                            child: OutlinedButton(
-                              onPressed: _hasSavedGame
-                                  ? () => _continueGame(context)
-                                  : null,
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                disabledForegroundColor: Colors.white38,
-                                side: BorderSide(
-                                  color: _hasSavedGame
-                                      ? Colors.white
-                                      : Colors.white38,
-                                  width: 2,
+                            SizedBox(
+                              width: double.infinity,
+                              height: 60,
+                              child: OutlinedButton(
+                                onPressed: _hasSavedGame
+                                    ? () => _continueGame(context)
+                                    : null,
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  disabledForegroundColor: Colors.white38,
+                                  side: BorderSide(
+                                    color: _hasSavedGame
+                                        ? Colors.white
+                                        : Colors.white38,
+                                    width: 2,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                              ),
-                              child: Text(
-                                _hasSavedGame
-                                    ? '이어서 하기\n$_savedGameInfo'
-                                    : '저장된 게임 없음',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  height: 1.3,
+                                child: Text(
+                                  _hasSavedGame
+                                      ? l10n.continueGame(_savedGameInfo)  // ✅ '이어서 하기\n...' → 번역 키
+                                      : l10n.noSavedGame,  // ✅ '저장된 게임 없음' → 번역 키
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.3,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
 
-                    const Spacer(flex: 2),
-                  ],
+                      const Spacer(flex: 2),
+                    ],
+                  ),
                 ),
-              ),
-                ],
+              ],
+            ),
+          ),
+        ),
+        if (_isLoading)
+          Container(
+            color: Colors.black54,
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
               ),
             ),
           ),
-          if (_isLoading)
-            Container(
-              color: Colors.black54,
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+      ],
+    ),
+  );
+}
 }

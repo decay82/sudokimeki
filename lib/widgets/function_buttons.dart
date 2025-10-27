@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/sudoku_game.dart';
+import '../l10n/app_localizations.dart';
 
 class FunctionButtons extends StatelessWidget {
   const FunctionButtons({super.key});
@@ -8,6 +9,7 @@ class FunctionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final game = context.watch<SudokuGame>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -96,10 +98,10 @@ class FunctionButtons extends StatelessWidget {
                 ),
                 child: Text(
                   game.isHintMode
-                      ? '힌트 ON'
+                      ? l10n.hintOn
                       : game.hintsAvailable > 0
-                          ? '힌트 +${game.hintsAvailable}'
-                          : '힌트',
+                          ? l10n.hintPlus(game.hintsAvailable)
+                          : l10n.hint,
                   style: const TextStyle(fontSize: 10),
                 ),
               ),

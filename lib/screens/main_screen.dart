@@ -5,6 +5,7 @@ import 'ranking_screen.dart';
 import 'statistics_screen.dart';
 import '../utils/ranking_badge_helper.dart';
 import '../utils/daily_mission_badge_helper.dart';
+import '../l10n/app_localizations.dart';
 
 class MainScreen extends StatefulWidget {
   final int initialIndex;
@@ -88,6 +89,8 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: PageView(
         controller: _pageController,
@@ -114,9 +117,9 @@ class _MainScreenState extends State<MainScreen> {
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
         items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '홈',
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.home),
+            label: l10n.home,
           ),
           BottomNavigationBarItem(
             icon: Stack(
@@ -142,7 +145,7 @@ class _MainScreenState extends State<MainScreen> {
                   ),
               ],
             ),
-            label: '일일 미션',
+            label: l10n.dailyMission,
           ),
           BottomNavigationBarItem(
             icon: Stack(
@@ -168,11 +171,11 @@ class _MainScreenState extends State<MainScreen> {
                   ),
               ],
             ),
-            label: '랭킹',
+            label: l10n.ranking,
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: '통계',
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.bar_chart),
+            label: l10n.statistics,
           ),
         ],
         selectedItemColor: const Color(0xFF6B4FFF),

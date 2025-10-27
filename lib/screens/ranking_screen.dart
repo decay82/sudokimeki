@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/ranking_entry.dart';
 import '../utils/weekly_bot_ranking.dart';
 import '../utils/ranking_history_storage.dart';
+import '../l10n/app_localizations.dart';
 import 'ranking_history_screen.dart';
 
 class RankingScreen extends StatefulWidget {
@@ -60,7 +61,7 @@ class _RankingScreenState extends State<RankingScreen>
 
     if (difference.isNegative) {
       setState(() {
-        _timeRemaining = '초기화 중...';
+        _timeRemaining = 'initializing';
       });
       return;
     }
@@ -72,7 +73,7 @@ class _RankingScreenState extends State<RankingScreen>
 
     String timeText = '';
     if (days > 0) {
-      timeText = '$days일 ${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+      timeText = '${days}d ${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     } else {
       timeText = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     }
@@ -226,8 +227,8 @@ class _RankingScreenState extends State<RankingScreen>
     }
 
     if (ranking.isEmpty) {
-      return const Center(
-        child: Text('랭킹 데이터가 없습니다.'),
+      return Center(
+        child: Text(AppLocalizations.of(context)!.noRankingData),
       );
     }
 
@@ -303,6 +304,7 @@ class _RankingScreenState extends State<RankingScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context); // AutomaticKeepAliveClientMixin 필수
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: widget.showAppBar
@@ -310,7 +312,7 @@ class _RankingScreenState extends State<RankingScreen>
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('랭킹'),
+                  Text(l10n.ranking),
                   Text(
                     _timeRemaining,
                     style: TextStyle(
@@ -321,7 +323,7 @@ class _RankingScreenState extends State<RankingScreen>
                   ),
                   IconButton(
                     icon: const Icon(Icons.emoji_events),
-                    tooltip: '랭킹 히스토리',
+                    tooltip: l10n.rankingHistory,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () {
@@ -338,10 +340,10 @@ class _RankingScreenState extends State<RankingScreen>
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,
               bottom: TabBar(
                 controller: _tabController,
-                tabs: const [
-                  Tab(text: '초급'),
-                  Tab(text: '중급'),
-                  Tab(text: '고급'),
+                tabs: [
+                  Tab(text: l10n.difficultyEasy),
+                  Tab(text: l10n.difficultyMedium),
+                  Tab(text: l10n.difficultyHard),
                 ],
               ),
             )
@@ -359,9 +361,9 @@ class _RankingScreenState extends State<RankingScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Text(
-                      '랭킹',
-                      style: TextStyle(
+                    Text(
+                      l10n.ranking,
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -376,7 +378,7 @@ class _RankingScreenState extends State<RankingScreen>
                     ),
                     IconButton(
                       icon: const Icon(Icons.emoji_events),
-                      tooltip: '랭킹 히스토리',
+                      tooltip: l10n.rankingHistory,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       onPressed: () {
@@ -398,10 +400,10 @@ class _RankingScreenState extends State<RankingScreen>
               color: Theme.of(context).colorScheme.inversePrimary,
               child: TabBar(
                 controller: _tabController,
-                tabs: const [
-                  Tab(text: '초급'),
-                  Tab(text: '중급'),
-                  Tab(text: '고급'),
+                tabs: [
+                  Tab(text: l10n.difficultyEasy),
+                  Tab(text: l10n.difficultyMedium),
+                  Tab(text: l10n.difficultyHard),
                 ],
               ),
             ),

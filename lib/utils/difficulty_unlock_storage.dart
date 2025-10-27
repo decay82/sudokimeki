@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../l10n/app_localizations.dart';
+import 'localization_helper.dart';
 
 class DifficultyUnlockStorage {
   // 난이도별 완료 횟수 키
@@ -58,7 +61,8 @@ class DifficultyUnlockStorage {
   }
 
   // 난이도별 잠금 해제 진행률 문자열
-  static Future<String> getUnlockProgressText(String difficulty) async {
+  static Future<String> getUnlockProgressText(BuildContext context, String difficulty) async {
+    final l10n = AppLocalizations.of(context)!;
     final requirement = unlockRequirements[difficulty];
     if (requirement == null) return '';
 
@@ -74,26 +78,8 @@ class DifficultyUnlockStorage {
     final completed = await getCompleted(previousDifficulty);
     final required = requirement['required'] as int;
 
-    final previousName = _getDifficultyKoreanName(previousDifficulty);
-    return '$previousName $completed/$required번 완료';
-  }
-
-  // 난이도 한글 이름
-  static String _getDifficultyKoreanName(String difficulty) {
-    switch (difficulty) {
-      case 'beginner':
-        return '입문자';
-      case 'rookie':
-        return '초보자';
-      case 'easy':
-        return '초급';
-      case 'medium':
-        return '중급';
-      case 'hard':
-        return '고급';
-      default:
-        return '';
-    }
+    final previousName = getDifficultyName(context, previousDifficulty);
+    return l10n.difficultyProgress(previousName, completed, required);
   }
 
   // 난이도별 저장 키 반환

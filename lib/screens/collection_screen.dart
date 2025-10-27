@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/daily_mission_storage.dart';
+import '../l10n/app_localizations.dart';
 
 class CollectionScreen extends StatefulWidget {
   const CollectionScreen({super.key});
@@ -98,10 +99,12 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('트로피 콜렉션'),
+          title: Text(l10n.trophyCollection),
         ),
         body: const Center(
           child: CircularProgressIndicator(),
@@ -114,13 +117,13 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('트로피 콜렉션'),
+        title: Text(l10n.trophyCollection),
       ),
       body: years.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
-                '아직 일일 미션이 없습니다',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                l10n.noDailyMissionsYet,
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
             )
           : ListView.builder(
@@ -170,46 +173,49 @@ class _CollectionScreenState extends State<CollectionScreen> {
                             onTap: () {
                               showDialog(
                                 context: context,
-                                builder: (context) => AlertDialog(
-                                  title: Text('$year년 $month월'),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.emoji_events,
-                                        size: 80,
-                                        color: hasTrophy ? Colors.amber : Colors.grey.shade300,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        hasTrophy ? '완료' : '진행 중',
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
+                                builder: (context) {
+                                  final dialogL10n = AppLocalizations.of(context)!;
+                                  return AlertDialog(
+                                    title: Text(dialogL10n.yearMonth(year, month)),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.emoji_events,
+                                          size: 80,
+                                          color: hasTrophy ? Colors.amber : Colors.grey.shade300,
                                         ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        '$completed / $total 미션 완료',
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                      if (hasTrophy) ...[
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          hasTrophy ? dialogL10n.completed : dialogL10n.inProgress,
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                         const SizedBox(height: 8),
                                         Text(
-                                          '$year년 $month월의 모든 일일 미션을\n완료했습니다!',
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                                          '$completed / $total ${dialogL10n.completedMission}',
+                                          style: const TextStyle(fontSize: 16),
                                         ),
+                                        if (hasTrophy) ...[
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            '${dialogL10n.yearMonth(year, month)}의 모든 일일 미션을\n완료했습니다!',
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(fontSize: 14, color: Colors.grey),
+                                          ),
+                                        ],
                                       ],
-                                    ],
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('확인'),
                                     ),
-                                  ],
-                                ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: Text(dialogL10n.confirm),
+                                      ),
+                                    ],
+                                  );
+                                },
                               );
                             },
                             child: Padding(

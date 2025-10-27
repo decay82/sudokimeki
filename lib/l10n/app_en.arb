@@ -1,0 +1,226 @@
+{
+  "@@locale": "en",
+
+  "difficultyBeginner": "Beginner",
+  "@difficultyBeginner": {
+    "description": "Beginner difficulty level"
+  },
+
+  "difficultyRookie": "Rookie",
+  "@difficultyRookie": {
+    "description": "Rookie difficulty level"
+  },
+
+  "difficultyEasy": "Easy",
+  "@difficultyEasy": {
+    "description": "Easy difficulty level"
+  },
+
+  "difficultyMedium": "Medium",
+  "@difficultyMedium": {
+    "description": "Medium difficulty level"
+  },
+
+  "difficultyHard": "Hard",
+  "@difficultyHard": {
+    "description": "Hard difficulty level"
+  },
+
+  "difficultyUnknown": "Unknown",
+  "@difficultyUnknown": {
+    "description": "Unknown difficulty level"
+  },
+
+  "difficultyBeginnerDesc": "Beginner - For first-time players",
+  "difficultyRookieDesc": "Rookie - Good for practice",
+  "difficultyEasyDesc": "Easy - Easy level",
+  "difficultyMediumDesc": "Medium - Normal level",
+  "difficultyHardDesc": "Hard - Difficult level",
+
+  "selectDifficulty": "Select Difficulty",
+  "cancel": "Cancel",
+  "sudokuPuzzleGame": "Sudoku Puzzle Game",
+  "newGame": "New Game",
+  "continueGame": "Continue\n{info}",
+  "@continueGame": {
+    "placeholders": {
+      "info": {
+        "type": "String"
+      }
+    }
+  },
+  "noSavedGame": "No Saved Game",
+  "noSavedGameAvailable": "No saved game available.",
+  "noPuzzlesForDifficulty": "No puzzles available for {difficulty} difficulty.",
+  "@noPuzzlesForDifficulty": {
+    "placeholders": {
+      "difficulty": {
+        "type": "String"
+      }
+    }
+  },
+
+  "statistics": "Statistics",
+  "games": "Games",
+  "gamesStarted": "Games Started",
+  "gamesWon": "Games Won",
+  "winRate": "Win Rate",
+  "perfectWins": "Perfect Wins",
+  "highScore": "High Score",
+  "today": "Today",
+  "thisWeek": "This Week",
+  "thisMonth": "This Month",
+  "allTime": "All Time",
+  "time": "Time",
+  "bestTime": "Best Time",
+  "averageTime": "Average Time",
+  "winStreak": "Win Streak",
+  "currentStreak": "Current Streak",
+  "bestStreak": "Best Streak",
+  "resetStatistics": "Reset Statistics",
+  "confirmResetStatistics": "Are you sure you want to reset statistics?",
+  "difficultyDataWillBeReset": "{difficulty} data will be reset.",
+  "@difficultyDataWillBeReset": {
+    "placeholders": {
+      "difficulty": {
+        "type": "String"
+      }
+    }
+  },
+  "statisticsReset": "{difficulty} statistics have been reset.",
+  "@statisticsReset": {
+    "placeholders": {
+      "difficulty": {
+        "type": "String"
+      }
+    }
+  },
+  "reset": "Reset",
+
+  "dailyMission": "Daily Mission",
+  "completedMission": "Completed Mission",
+  "difficulty": "Difficulty",
+  "clearTime": "Clear Time",
+  "play": "Play",
+  "yearMonth": "{month}/{year}",
+  "@yearMonth": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      }
+    }
+  },
+  "completed": "Completed",
+  "clearAllMissions": "Clear all missions",
+  "sunday": "Sun",
+  "monday": "Mon",
+  "tuesday": "Tue",
+  "wednesday": "Wed",
+  "thursday": "Thu",
+  "friday": "Fri",
+  "saturday": "Sat",
+
+  "ranking": "Ranking",
+  "rankingHistory": "Ranking History",
+  "noRankingData": "No ranking data available.",
+  "initializing": "Initializing...",
+  "timeRemaining": "{days}d {hours}:{minutes}:{seconds}",
+  "@timeRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "hours": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+
+  "history": "History",
+  "noRankingHistory": "No ranking history available.",
+  "season": "Season {number}",
+  "@season": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "rankNumber": "Rank {rank}",
+  "@rankNumber": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+
+  "smartOn": "Smart\nON",
+  "smart": "Smart",
+  "memoOn": "Memo\nON",
+  "memo": "Memo",
+  "delete": "Delete",
+  "hintOn": "Hint\nON",
+  "hintPlus": "Hint\n+{count}",
+  "@hintPlus": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hint": "Hint",
+
+  "completedGamesNotSaved": "Completed game will not be saved.",
+  "savedGameLoaded": "Saved game loaded.",
+  "difficultyProgress": "{previousName} {completed}/{required} completed",
+  "@difficultyProgress": {
+    "placeholders": {
+      "previousName": {
+        "type": "String"
+      },
+      "completed": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+
+  "me": "Me",
+
+  "options": "Options",
+  "soundEffects": "Sound Effects",
+  "close": "Close",
+  "gameOver": "Game Over",
+  "watchAdToGetHeart": "You must watch the ad to the end to receive a heart.",
+  "adWatchHeartRecharge": "Watch ad to recharge 3 hearts",
+  "restart": "Restart",
+  "home": "Home",
+  "totalScore": "Total Score",
+  "record": "Record: {time}",
+  "@record": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "nextStage": "Next Stage",
+  "unknown": "Unknown",
+  "trophyCollection": "Trophy Collection",
+  "noDailyMissionsYet": "No daily missions yet",
+  "inProgress": "In Progress",
+  "confirm": "Confirm",
+  "gameOverMessage": "Game ends after 3 mistakes."
+}

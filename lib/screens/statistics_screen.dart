@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/statistics_storage.dart';
+import '../l10n/app_localizations.dart';
 
 class StatisticsScreen extends StatefulWidget {
   final bool showAppBar;
@@ -98,18 +99,20 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   void _showResetConfirmDialog(String difficulty, String difficultyKorean) {
+    final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('통계를 초기화 하시겠습니까?'),
-          content: Text('$difficultyKorean 데이터가 초기화 됩니다.'),
+          title: Text(l10n.confirmResetStatistics),
+          content: Text(l10n.difficultyDataWillBeReset(difficultyKorean)),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('취소'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () async {
@@ -118,13 +121,13 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                 await _loadStatistics();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('$difficultyKorean 통계가 초기화되었습니다.')),
+                    SnackBar(content: Text(l10n.statisticsReset(difficultyKorean))),
                   );
                 }
               },
-              child: const Text(
-                '재설정',
-                style: TextStyle(color: Colors.red),
+              child: Text(
+                l10n.reset,
+                style: const TextStyle(color: Colors.red),
               ),
             ),
           ],
@@ -149,7 +152,9 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     );
   }
 
-  Widget _buildStatsContent(GameStatistics stats, String difficulty, String difficultyKorean) {
+  Widget _buildStatsContent(GameStatistics stats, String difficulty, String difficultyKorean, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       children: [
         Expanded(
@@ -158,39 +163,39 @@ class _StatisticsScreenState extends State<StatisticsScreen>
               children: [
                 const SizedBox(height: 20),
                 // 게임 카테고리
-                _buildCategoryHeader('게임'),
-                _buildStatRow('시작한 게임', _formatNumber(stats.gamesStarted)),
+                _buildCategoryHeader(l10n.games),
+                _buildStatRow(l10n.gamesStarted, _formatNumber(stats.gamesStarted)),
                 const Divider(height: 1),
-                _buildStatRow('승리한 게임', _formatNumber(stats.gamesWon)),
+                _buildStatRow(l10n.gamesWon, _formatNumber(stats.gamesWon)),
                 const Divider(height: 1),
-                _buildStatRow('승률', '${stats.winRate.toStringAsFixed(2)}%'),
+                _buildStatRow(l10n.winRate, '${stats.winRate.toStringAsFixed(2)}%'),
                 const Divider(height: 1),
-                _buildStatRow('실수 없이 승리', _formatNumber(stats.perfectWins)),
+                _buildStatRow(l10n.perfectWins, _formatNumber(stats.perfectWins)),
                 const SizedBox(height: 20),
 
                 // 최고 점수 카테고리
-                _buildCategoryHeader('최고 점수'),
-                _buildStatRow('오늘', _formatNumber(stats.todayHighScore)),
+                _buildCategoryHeader(l10n.highScore),
+                _buildStatRow(l10n.today, _formatNumber(stats.todayHighScore)),
                 const Divider(height: 1),
-                _buildStatRow('이번주', _formatNumber(stats.weekHighScore)),
+                _buildStatRow(l10n.thisWeek, _formatNumber(stats.weekHighScore)),
                 const Divider(height: 1),
-                _buildStatRow('이번달', _formatNumber(stats.monthHighScore)),
+                _buildStatRow(l10n.thisMonth, _formatNumber(stats.monthHighScore)),
                 const Divider(height: 1),
-                _buildStatRow('통산', _formatNumber(stats.totalScore)),
+                _buildStatRow(l10n.allTime, _formatNumber(stats.totalScore)),
                 const SizedBox(height: 20),
 
                 // 시간 카테고리
-                _buildCategoryHeader('시간'),
-                _buildStatRow('최고 시간', _formatTime(stats.bestTime)),
+                _buildCategoryHeader(l10n.time),
+                _buildStatRow(l10n.bestTime, _formatTime(stats.bestTime)),
                 const Divider(height: 1),
-                _buildStatRow('평균 시간', _formatTime(stats.averageTime)),
+                _buildStatRow(l10n.averageTime, _formatTime(stats.averageTime)),
                 const SizedBox(height: 20),
 
                 // 연승 카테고리
-                _buildCategoryHeader('연승'),
-                _buildStatRow('현재 연승', _formatNumber(stats.currentStreak)),
+                _buildCategoryHeader(l10n.winStreak),
+                _buildStatRow(l10n.currentStreak, _formatNumber(stats.currentStreak)),
                 const Divider(height: 1),
-                _buildStatRow('최고 연승', _formatNumber(stats.bestStreak)),
+                _buildStatRow(l10n.bestStreak, _formatNumber(stats.bestStreak)),
                 const SizedBox(height: 20),
               ],
             ),
@@ -207,9 +212,9 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: const Text(
-                '통계 초기화',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              child: Text(
+                l10n.resetStatistics,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -220,19 +225,21 @@ class _StatisticsScreenState extends State<StatisticsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: widget.showAppBar
           ? AppBar(
-              title: const Text('통계'),
+              title: Text(l10n.statistics),
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,
               bottom: TabBar(
                 controller: _tabController,
-                tabs: const [
-                  Tab(text: '입문자'),
-                  Tab(text: '초보자'),
-                  Tab(text: '초급'),
-                  Tab(text: '중급'),
-                  Tab(text: '고급'),
+                tabs: [
+                  Tab(text: l10n.difficultyBeginner),
+                  Tab(text: l10n.difficultyRookie),
+                  Tab(text: l10n.difficultyEasy),
+                  Tab(text: l10n.difficultyMedium),
+                  Tab(text: l10n.difficultyHard),
                 ],
               ),
             )
@@ -245,11 +252,11 @@ class _StatisticsScreenState extends State<StatisticsScreen>
               bottom: false,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: const Align(
+                child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    '통계',
-                    style: TextStyle(
+                    l10n.statistics,
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -263,12 +270,12 @@ class _StatisticsScreenState extends State<StatisticsScreen>
               color: Theme.of(context).colorScheme.inversePrimary,
               child: TabBar(
                 controller: _tabController,
-                tabs: const [
-                  Tab(text: '입문자'),
-                  Tab(text: '초보자'),
-                  Tab(text: '초급'),
-                  Tab(text: '중급'),
-                  Tab(text: '고급'),
+                tabs: [
+                  Tab(text: l10n.difficultyBeginner),
+                  Tab(text: l10n.difficultyRookie),
+                  Tab(text: l10n.difficultyEasy),
+                  Tab(text: l10n.difficultyMedium),
+                  Tab(text: l10n.difficultyHard),
                 ],
               ),
             ),
@@ -276,11 +283,11 @@ class _StatisticsScreenState extends State<StatisticsScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildStatsContent(beginnerStats, 'beginner', '입문자'),
-                _buildStatsContent(rookieStats, 'rookie', '초보자'),
-                _buildStatsContent(easyStats, 'easy', '초급'),
-                _buildStatsContent(mediumStats, 'medium', '중급'),
-                _buildStatsContent(hardStats, 'hard', '고급'),
+                _buildStatsContent(beginnerStats, 'beginner', l10n.difficultyBeginner, context),
+                _buildStatsContent(rookieStats, 'rookie', l10n.difficultyRookie, context),
+                _buildStatsContent(easyStats, 'easy', l10n.difficultyEasy, context),
+                _buildStatsContent(mediumStats, 'medium', l10n.difficultyMedium, context),
+                _buildStatsContent(hardStats, 'hard', l10n.difficultyHard, context),
               ],
             ),
           ),
