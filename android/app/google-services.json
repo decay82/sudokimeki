@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1067137406831",
+    "project_id": "sudokuandroid-92478",
+    "storage_bucket": "sudokuandroid-92478.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1067137406831:android:0972a4a828093819a8ba9a",
+        "android_client_info": {
+          "package_name": "com.dotsplit.sudokimeki"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_LwiOVJh5j1DaQhoDTOC1zw89YGUWfQE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

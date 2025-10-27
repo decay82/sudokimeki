@@ -9,6 +9,7 @@ import '../utils/sound_helper.dart';
 import '../utils/weekly_bot_ranking.dart';
 import '../utils/ranking_badge_helper.dart';
 import '../utils/difficulty_unlock_storage.dart';
+import '../utils/analytics_helper.dart';
 
 enum HeartAnimationStatus { none, animating }
 
@@ -370,6 +371,15 @@ void addHeart() {
       // 힌트 사용 시 콤보 초기화 및 0점 처리
       _calculateScore(row, col, isHint: true);
 
+      // Analytics: 힌트 사용 이벤트
+      if (!kIsWeb) {
+        await AnalyticsHelper.logHintUsed(
+          difficulty: currentDifficulty,
+          puzzleNumber: currentStage,
+          hintsUsedTotal: hintsUsed,
+        );
+      }
+
       notifyListeners();
 
       if (_checkIfComplete()) {
@@ -399,6 +409,20 @@ void addHeart() {
               currentDifficulty == 'medium' ||
               currentDifficulty == 'hard') {
             await RankingBadgeHelper.activateBadge();
+          }
+
+          // Analytics: 게임 완료 이벤트
+          if (!kIsWeb) {
+            await AnalyticsHelper.logGameComplete(
+              difficulty: currentDifficulty,
+              puzzleNumber: currentStage,
+              elapsedSeconds: elapsedTime.inSeconds,
+              hintsUsed: hintsUsed,
+              hearts: hearts,
+              score: totalScore,
+              isPerfect: hintsUsed == 0 && hearts == 3,
+              isDailyMission: false,
+            );
           }
 
           await GameStorage.clearSavedGame();
@@ -436,6 +460,15 @@ void addHeart() {
 
     if (recordStart) {
       await StatisticsStorage.recordGameStart(difficulty);
+
+      // Analytics: 게임 시작 이벤트
+      if (!kIsWeb) {
+        await AnalyticsHelper.logGameStart(
+          difficulty: difficulty,
+          puzzleNumber: stage,
+          isDailyMission: false,
+        );
+      }
     }
 
     notifyListeners();
@@ -738,6 +771,19 @@ void addHeart() {
               }
 
               if (hearts <= 0) {
+                // Analytics: 게임 오버 이벤트
+                if (!kIsWeb) {
+                  final elapsedSeconds = startTime != null
+                      ? DateTime.now().difference(startTime!).inSeconds
+                      : 0;
+                  await AnalyticsHelper.logGameOver(
+                    difficulty: currentDifficulty,
+                    puzzleNumber: currentStage,
+                    elapsedSeconds: elapsedSeconds,
+                    hintsUsed: hintsUsed,
+                  );
+                }
+
                 if (onGameOverCallback != null) {
                   onGameOverCallback!();
                 }
@@ -776,6 +822,20 @@ void addHeart() {
                 currentDifficulty == 'medium' ||
                 currentDifficulty == 'hard') {
               await RankingBadgeHelper.activateBadge();
+            }
+
+            // Analytics: 게임 완료 이벤트
+            if (!kIsWeb) {
+              await AnalyticsHelper.logGameComplete(
+                difficulty: currentDifficulty,
+                puzzleNumber: currentStage,
+                elapsedSeconds: elapsedTime.inSeconds,
+                hintsUsed: hintsUsed,
+                hearts: hearts,
+                score: totalScore,
+                isPerfect: hintsUsed == 0 && hearts == 3,
+                isDailyMission: false,
+              );
             }
 
             await GameStorage.clearSavedGame();
