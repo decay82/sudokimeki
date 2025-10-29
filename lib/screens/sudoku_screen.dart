@@ -8,6 +8,7 @@ import '../models/sudoku_game.dart';
 import '../utils/ad_helper.dart';
 import '../utils/play_counter.dart';
 import '../utils/sound_helper.dart';
+import '../utils/difficulty_unlock_storage.dart';
 import '../widgets/sudoku_board.dart';
 import '../widgets/number_pad.dart';
 import '../data/puzzle_data.dart';
@@ -63,7 +64,12 @@ class _SudokuScreenState extends State<SudokuScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final game = context.read<SudokuGame>();
       game.onCompletionCallback = () {
-        _showCompletionDialog(context, game);
+        // 1초 후 완료 다이얼로그 표시
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            _showCompletionDialog(context, game);
+          }
+        });
       };
       game.onGameOverCallback = () {
         _showGameOverDialog(context, game);
@@ -440,24 +446,41 @@ class _SudokuScreenState extends State<SudokuScreen> {
               ),
               actions: [
                 if (widget.isDailyMission) ...[
-                  TextButton(
+                  ElevatedButton(
                     onPressed: () {
                       _confettiController.stop();
                       Navigator.of(context).pop(); // 다이얼로그 닫기
                       Navigator.of(context).pop(); // 일일 미션 화면으로 돌아가기
                     },
-                    child: Text(l10n.home),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(l10n.home, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ] else ...[
-                  TextButton(
+                  ElevatedButton(
                     onPressed: () {
                       _confettiController.stop();
                       Navigator.of(context).pop();
                       _showDifficultySelectionDialog(context, game);
                     },
-                    child: Text(l10n.nextStage),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(l10n.nextStage, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
-                  TextButton(
+                  const SizedBox(width: 8),
+                  ElevatedButton(
                     onPressed: () {
                       _confettiController.stop();
                       Navigator.of(context).pop(); // 다이얼로그 닫기
@@ -467,7 +490,15 @@ class _SudokuScreenState extends State<SudokuScreen> {
                         ),
                       );
                     },
-                    child: Text(l10n.home),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(l10n.home, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ],
@@ -478,8 +509,14 @@ class _SudokuScreenState extends State<SudokuScreen> {
     );
   }
 
-  void _showDifficultySelectionDialog(BuildContext context, SudokuGame game) {
+  void _showDifficultySelectionDialog(BuildContext context, SudokuGame game) async {
     final l10n = AppLocalizations.of(context)!;
+
+    // 난이도 잠금 상태 확인
+    final unlockedStatus = await _checkAllDifficultiesUnlocked();
+    final progressTexts = await _getAllProgressTexts(context);
+
+    if (!context.mounted) return;
 
     showDialog(
       context: context,
@@ -500,6 +537,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 description: l10n.difficultyBeginnerDesc,
                 color: Colors.lightBlue,
                 difficulty: 'beginner',
+                isUnlocked: unlockedStatus['beginner'] ?? false,
+                progressText: progressTexts['beginner'] ?? '',
               ),
               const SizedBox(height: 12),
               _buildDifficultyButton(
@@ -509,6 +548,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 description: l10n.difficultyRookieDesc,
                 color: Colors.cyan,
                 difficulty: 'rookie',
+                isUnlocked: unlockedStatus['rookie'] ?? false,
+                progressText: progressTexts['rookie'] ?? '',
               ),
               const SizedBox(height: 12),
               _buildDifficultyButton(
@@ -518,6 +559,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 description: l10n.difficultyEasyDesc,
                 color: Colors.green,
                 difficulty: 'easy',
+                isUnlocked: unlockedStatus['easy'] ?? false,
+                progressText: progressTexts['easy'] ?? '',
               ),
               const SizedBox(height: 12),
               _buildDifficultyButton(
@@ -527,6 +570,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 description: l10n.difficultyMediumDesc,
                 color: Colors.orange,
                 difficulty: 'medium',
+                isUnlocked: unlockedStatus['medium'] ?? false,
+                progressText: progressTexts['medium'] ?? '',
               ),
               const SizedBox(height: 12),
               _buildDifficultyButton(
@@ -536,12 +581,17 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 description: l10n.difficultyHardDesc,
                 color: Colors.red,
                 difficulty: 'hard',
+                isUnlocked: unlockedStatus['hard'] ?? false,
+                progressText: progressTexts['hard'] ?? '',
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                Navigator.of(context).pop(); // 난이도 선택 팝업 닫기
+                _showCompletionDialogAgain(context, game); // 클리어 팝업 다시 표시
+              },
               child: Text(l10n.cancel),
             ),
           ],
@@ -550,8 +600,145 @@ class _SudokuScreenState extends State<SudokuScreen> {
     );
   }
 
-  void _showDifficultySelectionDialogFromGameOver(BuildContext context, SudokuGame game) {
+  // 클리어 팝업을 다시 표시 (일일 미션 처리 및 컨페티 없이)
+  void _showCompletionDialogAgain(BuildContext context, SudokuGame game) {
+    final timeString = game.getElapsedTimeString();
     final l10n = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(widget.isDailyMission ? '🎉 일일 미션 완료! 🎉' : '🎉 스테이지 완료! 🎉'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      l10n.totalScore,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _formatScore(game.totalScore),
+                      style: const TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.record(timeString),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            if (widget.isDailyMission) ...[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // 다이얼로그 닫기
+                  Navigator.of(context).pop(); // 일일 미션 화면으로 돌아가기
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(l10n.home, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ] else ...[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _showDifficultySelectionDialog(context, game);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(l10n.nextStage, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // 다이얼로그 닫기
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => const MainScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(l10n.home, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Future<Map<String, bool>> _checkAllDifficultiesUnlocked() async {
+    return {
+      'beginner': await DifficultyUnlockStorage.isUnlocked('beginner'),
+      'rookie': await DifficultyUnlockStorage.isUnlocked('rookie'),
+      'easy': await DifficultyUnlockStorage.isUnlocked('easy'),
+      'medium': await DifficultyUnlockStorage.isUnlocked('medium'),
+      'hard': await DifficultyUnlockStorage.isUnlocked('hard'),
+    };
+  }
+
+  Future<Map<String, String>> _getAllProgressTexts(BuildContext context) async {
+    return {
+      'beginner': await DifficultyUnlockStorage.getUnlockProgressText(context, 'beginner'),
+      'rookie': await DifficultyUnlockStorage.getUnlockProgressText(context, 'rookie'),
+      'easy': await DifficultyUnlockStorage.getUnlockProgressText(context, 'easy'),
+      'medium': await DifficultyUnlockStorage.getUnlockProgressText(context, 'medium'),
+      'hard': await DifficultyUnlockStorage.getUnlockProgressText(context, 'hard'),
+    };
+  }
+
+  void _showDifficultySelectionDialogFromGameOver(BuildContext context, SudokuGame game) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    // 난이도 잠금 상태 확인
+    final unlockedStatus = await _checkAllDifficultiesUnlocked();
+    final progressTexts = await _getAllProgressTexts(context);
+
+    if (!context.mounted) return;
 
     showDialog(
       context: context,
@@ -572,6 +759,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 description: l10n.difficultyBeginnerDesc,
                 color: Colors.lightBlue,
                 difficulty: 'beginner',
+                isUnlocked: unlockedStatus['beginner'] ?? false,
+                progressText: progressTexts['beginner'] ?? '',
               ),
               const SizedBox(height: 12),
               _buildDifficultyButtonFromGameOver(
@@ -581,6 +770,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 description: l10n.difficultyRookieDesc,
                 color: Colors.cyan,
                 difficulty: 'rookie',
+                isUnlocked: unlockedStatus['rookie'] ?? false,
+                progressText: progressTexts['rookie'] ?? '',
               ),
               const SizedBox(height: 12),
               _buildDifficultyButtonFromGameOver(
@@ -590,6 +781,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 description: l10n.difficultyEasyDesc,
                 color: Colors.green,
                 difficulty: 'easy',
+                isUnlocked: unlockedStatus['easy'] ?? false,
+                progressText: progressTexts['easy'] ?? '',
               ),
               const SizedBox(height: 12),
               _buildDifficultyButtonFromGameOver(
@@ -599,6 +792,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 description: l10n.difficultyMediumDesc,
                 color: Colors.orange,
                 difficulty: 'medium',
+                isUnlocked: unlockedStatus['medium'] ?? false,
+                progressText: progressTexts['medium'] ?? '',
               ),
               const SizedBox(height: 12),
               _buildDifficultyButtonFromGameOver(
@@ -608,6 +803,8 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 description: l10n.difficultyHardDesc,
                 color: Colors.red,
                 difficulty: 'hard',
+                isUnlocked: unlockedStatus['hard'] ?? false,
+                progressText: progressTexts['hard'] ?? '',
               ),
             ],
           ),
@@ -632,11 +829,13 @@ class _SudokuScreenState extends State<SudokuScreen> {
     required String description,
     required Color color,
     required String difficulty,
+    required bool isUnlocked,
+    required String progressText,
   }) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () async {
+        onPressed: !isUnlocked ? null : () async {
           Navigator.of(context).pop();
           setState(() => _isLoading = true);
 
@@ -692,7 +891,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
           }
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: color,
+          backgroundColor: isUnlocked ? color : Colors.grey,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
@@ -701,13 +900,23 @@ class _SudokuScreenState extends State<SudokuScreen> {
         ),
         child: Column(
           children: [
-            Text(
-              label,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!isUnlocked)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 8),
+                    child: Icon(Icons.lock, size: 20),
+                  ),
+                Text(
+                  label,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
             Text(
-              description,
+              isUnlocked ? description : progressText,
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.normal,
@@ -726,11 +935,13 @@ class _SudokuScreenState extends State<SudokuScreen> {
     required String description,
     required Color color,
     required String difficulty,
+    required bool isUnlocked,
+    required String progressText,
   }) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () async {
+        onPressed: !isUnlocked ? null : () async {
           Navigator.of(context).pop();
           setState(() => _isLoading = true);
 
@@ -790,7 +1001,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
           }
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: color,
+          backgroundColor: isUnlocked ? color : Colors.grey,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
@@ -799,13 +1010,23 @@ class _SudokuScreenState extends State<SudokuScreen> {
         ),
         child: Column(
           children: [
-            Text(
-              label,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!isUnlocked)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 8),
+                    child: Icon(Icons.lock, size: 20),
+                  ),
+                Text(
+                  label,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
             Text(
-              description,
+              isUnlocked ? description : progressText,
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.normal,

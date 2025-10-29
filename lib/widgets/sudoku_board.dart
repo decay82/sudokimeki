@@ -163,7 +163,9 @@ class SudokuBoard extends StatelessWidget {
                                         )
                                       : (game.memos[row][col].isNotEmpty
                                           ? _buildMemoGrid(
-                                              game.memos[row][col], cellSize)
+                                              game.memos[row][col],
+                                              cellSize,
+                                              game.isSmartInputMode ? game.selectedNumber : null)
                                           : null),
                                 ),
                                 // 점수 표시 애니메이션
@@ -191,7 +193,7 @@ class SudokuBoard extends StatelessWidget {
     );
   }
 
-  Widget _buildMemoGrid(Set<int> memos, double cellSize) {
+  Widget _buildMemoGrid(Set<int> memos, double cellSize, int? highlightNumber) {
     return GridView.builder(
       padding: EdgeInsets.all(cellSize * 0.05),
       physics: const NeverScrollableScrollPhysics(),
@@ -203,12 +205,24 @@ class SudokuBoard extends StatelessWidget {
       itemBuilder: (context, index) {
         final number = index + 1;
         final hasMemo = memos.contains(number);
+        final isHighlighted = hasMemo && highlightNumber != null && number == highlightNumber;
+
         return Center(
-          child: Text(
-            hasMemo ? number.toString() : '',
-            style: TextStyle(
-              fontSize: cellSize * 0.2,
-              color: const Color(0xFF20252B),
+          child: Container(
+            decoration: isHighlighted
+                ? BoxDecoration(
+                    color: Colors.purple.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(3),
+                  )
+                : null,
+            padding: isHighlighted ? const EdgeInsets.symmetric(horizontal: 2, vertical: 1) : null,
+            child: Text(
+              hasMemo ? number.toString() : '',
+              style: TextStyle(
+                fontSize: cellSize * 0.2,
+                color: isHighlighted ? Colors.purple : const Color(0xFF20252B),
+                fontWeight: isHighlighted ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
           ),
         );

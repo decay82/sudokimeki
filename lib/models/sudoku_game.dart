@@ -105,8 +105,10 @@ void addHeart() {
 
   
 
-  int _checkCompletions(int row, int col) {
+  // 완료 체크 결과를 담는 클래스
+  ({int bonusScore, int completedLinesCount}) _checkCompletions(int row, int col) {
     int bonusScore = 0;
+    int completedLinesCount = 0;
     final scores = scoreTable[currentDifficulty] ?? scoreTable['easy']!;
 
     bool rowComplete = true;
@@ -120,6 +122,7 @@ void addHeart() {
     if (rowComplete && !completedLines.contains('row_$row')) {
       completedLines.add('row_$row');
       bonusScore += scores['line']!;
+      completedLinesCount++;
       _animateCompletion('row', row);
     }
 
@@ -134,6 +137,7 @@ void addHeart() {
     if (colComplete && !completedLines.contains('col_$col')) {
       completedLines.add('col_$col');
       bonusScore += scores['line']!;
+      completedLinesCount++;
       _animateCompletion('col', col);
     }
 
@@ -155,10 +159,11 @@ void addHeart() {
     if (boxComplete && !completedLines.contains('box_$boxIndex')) {
       completedLines.add('box_$boxIndex');
       bonusScore += scores['box']!;
+      completedLinesCount++;
       _animateCompletion('box', boxIndex);
     }
 
-    return bonusScore;
+    return (bonusScore: bonusScore, completedLinesCount: completedLinesCount);
   }
 
   // 점수 계산 메서드
@@ -177,8 +182,8 @@ void addHeart() {
     earnedScore += scores['base']!;
 
     // 2. 라인/박스 보너스 (_checkCompletions에서 계산됨)
-    int bonusScore = _checkCompletions(row, col);
-    earnedScore += bonusScore;
+    final completionResult = _checkCompletions(row, col);
+    earnedScore += completionResult.bonusScore;
 
     // 3. 콤보 보너스
     final now = DateTime.now();
@@ -367,6 +372,9 @@ void addHeart() {
         hintsAvailable--;
         print('힌트 사용 완료. 남은 힌트: $hintsAvailable개');
       }
+
+      // 힌트 입력 시 관련 셀들의 메모에서 동일한 숫자 제거
+      _removeMemosInRelatedCells(row, col, answer);
 
       // 힌트 사용 시 콤보 초기화 및 0점 처리
       _calculateScore(row, col, isHint: true);
@@ -620,6 +628,88 @@ void addHeart() {
     }
   }
 
+  // 남은 칸 개수 계산
+  int _getRemainingCount(int number) {
+    int count = 0;
+    for (int i = 0; i < 9; i++) {
+      for (int j = 0; j < 9; j++) {
+        if (initialBoard[i][j] == number ||
+            (correctCells[i][j] && board[i][j] == number)) {
+          count++;
+        }
+      }
+    }
+    return 9 - count;
+  }
+
+  // 다음으로 자동 선택할 숫자 찾기
+  int? _findNextNumberToSelect(int removedNumber) {
+    // 각 숫자의 남은 칸 개수 계산
+    Map<int, int> remainingCounts = {};
+    for (int num = 1; num <= 9; num++) {
+      int remaining = _getRemainingCount(num);
+      if (remaining > 0) {
+        remainingCounts[num] = remaining;
+      }
+    }
+
+    if (remainingCounts.isEmpty) {
+      return null; // 모든 숫자가 다 채워짐
+    }
+
+    // 가장 적게 남은 개수 찾기 (가장 많이 채워진 숫자)
+    int minRemaining = remainingCounts.values.reduce((a, b) => a < b ? a : b);
+
+    // 가장 적게 남은 숫자들 필터링
+    List<int> candidates = remainingCounts.entries
+        .where((entry) => entry.value == minRemaining)
+        .map((entry) => entry.key)
+        .toList();
+
+    if (candidates.length == 1) {
+      return candidates[0];
+    }
+
+    // 동점일 때: 제거된 숫자보다 큰 수 중 가장 가까운 수
+    List<int> greaterNumbers = candidates.where((num) => num > removedNumber).toList();
+    if (greaterNumbers.isNotEmpty) {
+      greaterNumbers.sort();
+      return greaterNumbers[0];
+    }
+
+    // 제거된 숫자보다 큰 수가 없으면 가장 작은 수
+    candidates.sort();
+    return candidates[0];
+  }
+
+  // 정답 입력 시 해당 행/열/박스의 메모에서 동일한 숫자 제거
+  void _removeMemosInRelatedCells(int row, int col, int number) {
+    // 같은 행의 모든 셀에서 메모 제거
+    for (int i = 0; i < 9; i++) {
+      if (memos[row][i].contains(number)) {
+        memos[row][i].remove(number);
+      }
+    }
+
+    // 같은 열의 모든 셀에서 메모 제거
+    for (int i = 0; i < 9; i++) {
+      if (memos[i][col].contains(number)) {
+        memos[i][col].remove(number);
+      }
+    }
+
+    // 같은 3x3 박스의 모든 셀에서 메모 제거
+    int boxRow = (row ~/ 3) * 3;
+    int boxCol = (col ~/ 3) * 3;
+    for (int i = boxRow; i < boxRow + 3; i++) {
+      for (int j = boxCol; j < boxCol + 3; j++) {
+        if (memos[i][j].contains(number)) {
+          memos[i][j].remove(number);
+        }
+      }
+    }
+  }
+
   List<String> findConflictingCells(int row, int col, int number) {
     List<String> conflicts = [];
 
@@ -757,8 +847,78 @@ void addHeart() {
               correctCells[selectedRow!][selectedCol!] = true;
               SoundHelper.playCorrectSound();
 
-              // 점수 계산
-              final earnedScore = _calculateScore(selectedRow!, selectedCol!);
+              // 정답 입력 시 관련 셀들의 메모에서 동일한 숫자 제거
+              _removeMemosInRelatedCells(selectedRow!, selectedCol!, number);
+
+              // 점수 계산 및 라인 완료 체크
+              final completionResult = _checkCompletions(selectedRow!, selectedCol!);
+
+              // 기본 점수 + 라인 보너스 계산
+              final scores = scoreTable[currentDifficulty] ?? scoreTable['easy']!;
+              int earnedScore = scores['base']! + completionResult.bonusScore;
+
+              // 콤보 보너스
+              final now = DateTime.now();
+              if (lastCorrectAnswerTime != null) {
+                final timeDiff = now.difference(lastCorrectAnswerTime!);
+                if (timeDiff.inSeconds <= 5) {
+                  currentCombo++;
+                  earnedScore += scores['combo']! * currentCombo;
+                } else {
+                  currentCombo = 0;
+                }
+              } else {
+                currentCombo = 0;
+              }
+
+              lastCorrectAnswerTime = now;
+              totalScore += earnedScore;
+
+              // 점수 표시
+              if (earnedScore > 0) {
+                scoreDisplayRow = selectedRow;
+                scoreDisplayCol = selectedCol;
+                scoreDisplayValue = earnedScore;
+                scoreDisplayTime = DateTime.now();
+
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  scoreDisplayRow = null;
+                  scoreDisplayCol = null;
+                  scoreDisplayValue = null;
+                  scoreDisplayTime = null;
+                  notifyListeners();
+                });
+              }
+
+              // 스마트 입력 모드에서 선택된 숫자가 모두 채워졌는지 확인
+              if (isSmartInputMode && selectedNumber != null) {
+                final remaining = _getRemainingCount(selectedNumber!);
+                if (remaining == 0) {
+                  final currentSelectedNumber = selectedNumber!;
+
+                  // 라인 완료 여부에 따라 다른 딜레이 적용
+                  if (completionResult.completedLinesCount > 0) {
+                    // 라인 완료 애니메이션 대기 (각 라인당 450ms)
+                    final animationDuration = completionResult.completedLinesCount * 450;
+                    Future.delayed(Duration(milliseconds: animationDuration), () {
+                      if (selectedNumber == currentSelectedNumber) {
+                        final nextNumber = _findNextNumberToSelect(currentSelectedNumber);
+                        selectedNumber = nextNumber;
+                        notifyListeners();
+                      }
+                    });
+                  } else {
+                    // 라인 완료 없으면 0.45초 대기
+                    Future.delayed(const Duration(milliseconds: 450), () {
+                      if (selectedNumber == currentSelectedNumber) {
+                        final nextNumber = _findNextNumberToSelect(currentSelectedNumber);
+                        selectedNumber = nextNumber;
+                        notifyListeners();
+                      }
+                    });
+                  }
+                }
+              }
             } else {
               hearts--;
               SoundHelper.playWrongSound();
