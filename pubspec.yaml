@@ -79,6 +79,7 @@ flutter:
     - assets/icon.png
     - assets/sounds/correct.wav
     - assets/sounds/wrong.wav
+    - assets/images/smile.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

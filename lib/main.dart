@@ -22,7 +22,7 @@ void main() async {
   // Firebase 초기화 (웹 제외)
   if (!kIsWeb) {
     await Firebase.initializeApp();
-    MobileAds.instance.initialize();
+    await MobileAds.instance.initialize();
 
     // 앱 오픈 이벤트 로깅
     await AnalyticsHelper.logAppOpen();

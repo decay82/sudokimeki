@@ -58,8 +58,15 @@ class SudokuBoard extends StatelessWidget {
                       // 충돌하는 셀인지 확인
                       final isConflicting = game.conflictingCells.contains('${row}_$col');
 
+                      // 튜토리얼: 허용된 셀인지
+                      final isTutorialTarget = game.isTutorialMode &&
+                          game.tutorialAllowedRow == row &&
+                          game.tutorialAllowedCol == col;
+
                       Color bgColor = Colors.white;
-                      if (isAnimating) {
+                      if (isTutorialTarget) {
+                        bgColor = Colors.orange.withValues(alpha: 0.25);
+                      } else if (isAnimating) {
                         bgColor = Colors.blue.withOpacity(0.5);
                       } else if (isSelected && !game.isSmartInputMode) {
                         // 일반 모드에서만 선택된 셀 하이라이트
@@ -92,6 +99,8 @@ class SudokuBoard extends StatelessWidget {
                       return Expanded(
                         child: GestureDetector(
                           onTap: () {
+                            // 튜토리얼 모드: 허용된 셀만 탭 가능
+                            if (game.isTutorialMode && !isTutorialTarget) return;
                             if (game.isHintMode) {
                               game.useHint(row, col);
                             } else if (game.isSmartInputMode && game.selectedNumber != null) {

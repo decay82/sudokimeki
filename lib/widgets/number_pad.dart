@@ -42,7 +42,9 @@ class NumberPad extends StatelessWidget {
                 // 스마트 입력 버튼
                 Flexible(
                   child: _buildFunctionButton(
-                    onPressed: game.toggleSmartInputMode,
+                    onPressed: game.isTutorialMode && !game.tutorialAllowSmartButton
+                        ? () {}
+                        : game.toggleSmartInputMode,
                     icon: Icon(
                       game.isSmartInputMode ? Icons.touch_app : Icons.touch_app_outlined,
                       size: 13,
@@ -50,6 +52,7 @@ class NumberPad extends StatelessWidget {
                     label: game.isSmartInputMode ? l10n.smartOn : l10n.smart,
                     isActive: game.isSmartInputMode,
                     activeColor: Colors.purple,
+                    isHighlighted: game.isTutorialMode && game.tutorialAllowSmartButton,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -129,15 +132,22 @@ class NumberPad extends StatelessWidget {
 
                     final isSelected = game.isSmartInputMode && game.selectedNumber == number;
 
+                    // 튜토리얼: 허용된 숫자만 활성화
+                    final isTutorialBlocked = game.isTutorialMode &&
+                        game.tutorialAllowedNumber != null &&
+                        game.tutorialAllowedNumber != number;
+                    final isTutorialTarget = game.isTutorialMode &&
+                        game.tutorialAllowedNumber == number;
+
                     return Padding(
                       padding: EdgeInsets.symmetric(horizontal: spacing / 2),
                       child: SizedBox(
                         width: buttonWidth,
                         height: buttonHeight,
                         child: Opacity(
-                          opacity: isHidden ? 0.0 : 1.0,
+                          opacity: isHidden ? 0.0 : (isTutorialBlocked ? 0.3 : 1.0),
                           child: ElevatedButton(
-                            onPressed: isHidden
+                            onPressed: isHidden || isTutorialBlocked
                                 ? null
                                 : () {
                                     if (game.isSmartInputMode) {
@@ -147,7 +157,9 @@ class NumberPad extends StatelessWidget {
                                     }
                                   },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: isSelected ? Colors.deepPurple : Colors.blue,
+                              backgroundColor: isTutorialTarget
+                                  ? Colors.orange
+                                  : isSelected ? Colors.deepPurple : Colors.blue,
                               foregroundColor: Colors.white,
                               disabledBackgroundColor: Colors.blue,
                               disabledForegroundColor: Colors.white,
@@ -194,8 +206,11 @@ class NumberPad extends StatelessWidget {
     required bool isActive,
     required Color activeColor,
     Color? backgroundColor,
+    bool isHighlighted = false,
   }) {
-    final bgColor = backgroundColor ?? (isActive ? activeColor : Colors.grey);
+    final bgColor = isHighlighted
+        ? Colors.orange
+        : backgroundColor ?? (isActive ? activeColor : Colors.grey);
 
     return SizedBox(
       height: 50,

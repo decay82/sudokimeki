@@ -64,6 +64,13 @@ class SudokuGame extends ChangeNotifier {
 
   String currentDifficulty = 'normal';
 
+  // ========== 튜토리얼 모드 ==========
+  bool isTutorialMode = false;
+  int? tutorialAllowedRow;
+  int? tutorialAllowedCol;
+  int? tutorialAllowedNumber;
+  bool tutorialAllowSmartButton = false;
+
   // ========== 점수 시스템 ==========
   int totalScore = 0;  // 총 점수
   int currentCombo = 0;  // 현재 콤보 수
@@ -1039,7 +1046,90 @@ void addHeart() {
     }
   }
 
+  // ========== 튜토리얼 전용 메서드 ==========
+
+  static const List<List<int>> _tutorialPuzzle = [
+    [5, 8, 7, 2, 3, 4, 9, 1, 6],
+    [3, 6, 2, 8, 7, 9, 4, 0, 5], // (1,7) 빈칸 → 9 입력
+    [4, 1, 9, 6, 8, 3, 7, 2, 1],
+    [9, 7, 5, 3, 2, 8, 1, 3, 4],
+    [1, 2, 3, 4, 0, 6, 7, 8, 9], // (4,4) 빈칸 → 5 입력 (가로줄 데모)
+    [8, 4, 6, 7, 9, 5, 3, 4, 2],
+    [7, 3, 1, 5, 6, 2, 8, 5, 3],
+    [6, 5, 8, 1, 4, 7, 2, 6, 7],
+    [2, 9, 4, 9, 1, 1, 5, 7, 8],
+  ];
+
+  static const List<List<int>> _tutorialSolution = [
+    [5, 8, 7, 2, 3, 4, 9, 1, 6],
+    [3, 6, 2, 8, 7, 9, 4, 9, 5], // (1,7) = 9
+    [4, 1, 9, 6, 8, 3, 7, 2, 1],
+    [9, 7, 5, 3, 2, 8, 1, 3, 4],
+    [1, 2, 3, 4, 5, 6, 7, 8, 9], // (4,4) = 5
+    [8, 4, 6, 7, 9, 5, 3, 4, 2],
+    [7, 3, 1, 5, 6, 2, 8, 5, 3],
+    [6, 5, 8, 1, 4, 7, 2, 6, 7],
+    [2, 9, 4, 9, 1, 1, 5, 7, 8],
+  ];
+
+  void loadTutorialBoard() {
+    isTutorialMode = true;
+    currentDifficulty = 'beginner';
+
+    board = _tutorialPuzzle.map((r) => List<int>.from(r)).toList();
+    initialBoard = _tutorialPuzzle.map((r) => List<int>.from(r)).toList();
+    currentSolution = _tutorialSolution.map((r) => List<int>.from(r)).toList();
+    memos = List.generate(9, (_) => List.generate(9, (_) => <int>{}));
+    correctCells = List.generate(9, (_) => List.generate(9, (_) => false));
+    completedLines.clear();
+    conflictingCells.clear();
+    selectedRow = null;
+    selectedCol = null;
+    isSmartInputMode = false;
+    isMemoMode = false;
+    isHintMode = false;
+    selectedNumber = null;
+    isCompleted = false;
+    hearts = 3;
+    hintsUsed = 0;
+    hintsAvailable = 0;
+    totalScore = 0;
+    currentCombo = 0;
+    startTime = DateTime.now();
+    elapsedTime = Duration.zero;
+
+    tutorialAllowedRow = null;
+    tutorialAllowedCol = null;
+    tutorialAllowedNumber = null;
+    tutorialAllowSmartButton = false;
+
+    notifyListeners();
+  }
+
+  void setTutorialConstraints({
+    int? allowedRow,
+    int? allowedCol,
+    int? allowedNumber,
+    bool allowSmartButton = false,
+  }) {
+    tutorialAllowedRow = allowedRow;
+    tutorialAllowedCol = allowedCol;
+    tutorialAllowedNumber = allowedNumber;
+    tutorialAllowSmartButton = allowSmartButton;
+    notifyListeners();
+  }
+
+  void exitTutorialMode() {
+    isTutorialMode = false;
+    tutorialAllowedRow = null;
+    tutorialAllowedCol = null;
+    tutorialAllowedNumber = null;
+    tutorialAllowSmartButton = false;
+    notifyListeners();
+  }
+
   bool _checkIfComplete() {
+    if (isTutorialMode) return false;
     for (int i = 0; i < 9; i++) {
       for (int j = 0; j < 9; j++) {
         if (board[i][j] == 0) return false;

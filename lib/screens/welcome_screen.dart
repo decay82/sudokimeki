@@ -8,6 +8,8 @@ import '../utils/ad_helper.dart';
 import '../utils/play_counter.dart';
 import '../utils/difficulty_unlock_storage.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/tutorial_storage.dart';
+import 'onboarding_screen.dart';
 import 'sudoku_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -38,8 +40,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
 
       if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
-        // 업데이트가 있으면 항상 즉시 업데이트 (강제)
-        await InAppUpdate.performImmediateUpdate();
+        // 유연한 업데이트: UI 차단 없이 백그라운드 다운로드
+        await InAppUpdate.startFlexibleUpdate();
+        await InAppUpdate.completeFlexibleUpdate();
       }
     } catch (e) {
       print('인앱 업데이트 확인 실패: $e');
@@ -222,7 +225,22 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       child: ElevatedButton(
         onPressed: isUnlocked
             ? () async {
-                Navigator.of(context).pop();
+                final nav = Navigator.of(context);
+                nav.pop();
+
+                // 첫 실행 시 온보딩으로 이동
+                final onboardingDone = await TutorialStorage.isOnboardingDone();
+                if (!mounted) return;
+                if (!onboardingDone) {
+                  nav.push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          OnboardingScreen(selectedDifficulty: difficulty),
+                    ),
+                  );
+                  return;
+                }
+
                 setState(() => _isLoading = true);
 
                 // 플레이 횟수 증가
