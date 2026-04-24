@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../data/puzzle_data.dart';
+import '../utils/sudoku_generator.dart';
 import '../utils/ad_helper.dart';
 import '../utils/game_storage.dart';
 import '../utils/statistics_storage.dart';
@@ -14,12 +15,14 @@ import '../utils/analytics_helper.dart';
 enum HeartAnimationStatus { none, animating }
 
 class SudokuGame extends ChangeNotifier {
+  // daily mission 전용 — 일반 게임은 generator 사용
   final List<List<List<int>>> puzzles = PuzzleData.puzzles;
   final List<List<List<int>>> solutions = PuzzleData.solutions;
   Set<String> completedLines = {};
 
   List<List<bool>> correctCells = [];
-  int currentStage = 0;
+  int currentStage = 0; // daily mission 전용
+  List<List<int>> currentSolution = []; // 현재 게임 정답
   HeartAnimationStatus heartAnimationStatus = HeartAnimationStatus.none;
 
   // 동시 애니메이션 지원: 여러 애니메이션을 동시에 실행
@@ -59,7 +62,7 @@ class SudokuGame extends ChangeNotifier {
   Function()? onCompletionCallback;
   Function()? onGameOverCallback;
 
-  String currentDifficulty = 'easy';
+  String currentDifficulty = 'normal';
 
   // ========== 점수 시스템 ==========
   int totalScore = 0;  // 총 점수
@@ -75,10 +78,9 @@ class SudokuGame extends ChangeNotifier {
   // 난이도별 점수표
   static const Map<String, Map<String, int>> scoreTable = {
     'beginner': {'base': 10, 'line': 50, 'box': 50, 'combo': 5, 'clear': 500},
-    'rookie': {'base': 20, 'line': 100, 'box': 100, 'combo': 10, 'clear': 1000},
-    'easy': {'base': 20, 'line': 100, 'box': 100, 'combo': 10, 'clear': 1000},
-    'medium': {'base': 30, 'line': 150, 'box': 150, 'combo': 15, 'clear': 1500},
-    'hard': {'base': 50, 'line': 300, 'box': 300, 'combo': 25, 'clear': 3000},
+    'easy':     {'base': 20, 'line': 100, 'box': 100, 'combo': 10, 'clear': 1000},
+    'normal':   {'base': 30, 'line': 150, 'box': 150, 'combo': 15, 'clear': 1500},
+    'hard':     {'base': 50, 'line': 300, 'box': 300, 'combo': 25, 'clear': 3000},
   };
 
   SudokuGame() {
@@ -109,12 +111,12 @@ void addHeart() {
   ({int bonusScore, int completedLinesCount}) _checkCompletions(int row, int col) {
     int bonusScore = 0;
     int completedLinesCount = 0;
-    final scores = scoreTable[currentDifficulty] ?? scoreTable['easy']!;
+    final scores = scoreTable[currentDifficulty] ?? scoreTable['normal']!;
 
     bool rowComplete = true;
     for (int i = 0; i < 9; i++) {
       if (board[row][i] == 0 ||
-          solutions[currentStage][row][i] != board[row][i]) {
+          currentSolution[row][i] != board[row][i]) {
         rowComplete = false;
         break;
       }
@@ -129,7 +131,7 @@ void addHeart() {
     bool colComplete = true;
     for (int i = 0; i < 9; i++) {
       if (board[i][col] == 0 ||
-          solutions[currentStage][i][col] != board[i][col]) {
+          currentSolution[i][col] != board[i][col]) {
         colComplete = false;
         break;
       }
@@ -148,7 +150,7 @@ void addHeart() {
 
     for (int i = boxRow * 3; i < boxRow * 3 + 3; i++) {
       for (int j = boxCol * 3; j < boxCol * 3 + 3; j++) {
-        if (board[i][j] == 0 || solutions[currentStage][i][j] != board[i][j]) {
+        if (board[i][j] == 0 || currentSolution[i][j] != board[i][j]) {
           boxComplete = false;
           break;
         }
@@ -175,7 +177,7 @@ void addHeart() {
       return 0;
     }
 
-    final scores = scoreTable[currentDifficulty] ?? scoreTable['easy']!;
+    final scores = scoreTable[currentDifficulty] ?? scoreTable['normal']!;
     int earnedScore = 0;
 
     // 1. 기본 점수
@@ -227,7 +229,7 @@ void addHeart() {
 
   // 클리어 보너스 적용
   void _applyClearBonus() {
-    final scores = scoreTable[currentDifficulty] ?? scoreTable['easy']!;
+    final scores = scoreTable[currentDifficulty] ?? scoreTable['normal']!;
     totalScore += scores['clear']!;
   }
 
@@ -360,7 +362,7 @@ void addHeart() {
 
   void useHint(int row, int col) async {
     if (initialBoard[row][col] == 0 && currentStage < solutions.length) {
-      final answer = solutions[currentStage][row][col];
+      final answer = currentSolution[row][col];
       board[row][col] = answer;
       memos[row][col].clear();
       correctCells[row][col] = true;
@@ -414,7 +416,7 @@ void addHeart() {
 
           // 랭킹 배지 활성화 (초급, 중급, 고급만)
           if (currentDifficulty == 'easy' ||
-              currentDifficulty == 'medium' ||
+              currentDifficulty == 'normal' ||
               currentDifficulty == 'hard') {
             await RankingBadgeHelper.activateBadge();
           }
@@ -443,11 +445,20 @@ void addHeart() {
     }
   }
 
-  void loadStage(int stage, {String difficulty = 'easy', bool recordStart = true}) async {
+  void loadStage(int stage, {String difficulty = 'normal', bool recordStart = true}) async {
     currentStage = stage;
     currentDifficulty = difficulty;
-    board = puzzles[stage].map((row) => List<int>.from(row)).toList();
-    initialBoard = puzzles[stage].map((row) => List<int>.from(row)).toList();
+
+    // 생성기로 퍼즐 생성
+    final generated = SudokuGenerator.generate(
+      SudokuGenerator.difficultyFromString(difficulty),
+    );
+    final generatedPuzzle = generated['puzzle']!;
+    final generatedSolution = generated['solution']!;
+
+    currentSolution = generatedSolution;
+    board = generatedPuzzle.map((row) => List<int>.from(row)).toList();
+    initialBoard = generatedPuzzle.map((row) => List<int>.from(row)).toList();
     memos = List.generate(9, (_) => List.generate(9, (_) => <int>{}));
     correctCells = List.generate(9, (_) => List.generate(9, (_) => false));
     completedLines.clear();
@@ -459,7 +470,7 @@ void addHeart() {
     isCompleted = false;
     hearts = 3;
     hintsUsed = 0;
-    hintsAvailable = 1; // 매판 시작 시 힌트 1개 지급
+    hintsAvailable = 1;
 
     // 점수 시스템 초기화
     totalScore = 0;
@@ -469,7 +480,6 @@ void addHeart() {
     if (recordStart) {
       await StatisticsStorage.recordGameStart(difficulty);
 
-      // Analytics: 게임 시작 이벤트
       if (!kIsWeb) {
         await AnalyticsHelper.logGameStart(
           difficulty: difficulty,
@@ -493,9 +503,10 @@ void addHeart() {
         : 0;
 
     await GameStorage.saveGame(
-      currentStage: currentStage,
+      currentDifficulty: currentDifficulty,
       board: board,
       initialBoard: initialBoard,
+      solution: currentSolution,
       memos: memos,
       correctCells: correctCells,
       hearts: hearts,
@@ -513,7 +524,8 @@ void addHeart() {
       return false;
     }
 
-    currentStage = savedData['currentStage'];
+    currentDifficulty = savedData['currentDifficulty'] ?? 'easy';
+    currentSolution = savedData['solution'];
     board = savedData['board'];
     initialBoard = savedData['initialBoard'];
     memos = savedData['memos'];
@@ -569,7 +581,25 @@ void addHeart() {
   }
 
   void restartStage() {
-    loadStage(currentStage, difficulty: currentDifficulty);
+    // 같은 퍼즐 재시작 — 새로 생성하지 않고 initialBoard/currentSolution 유지
+    board = initialBoard.map((row) => List<int>.from(row)).toList();
+    memos = List.generate(9, (_) => List.generate(9, (_) => <int>{}));
+    correctCells = List.generate(9, (_) => List.generate(9, (_) => false));
+    completedLines.clear();
+    conflictingCells.clear();
+    selectedRow = null;
+    selectedCol = null;
+    isMemoMode = false;
+    startTime = DateTime.now();
+    elapsedTime = Duration.zero;
+    isCompleted = false;
+    hearts = 3;
+    hintsUsed = 0;
+    hintsAvailable = 1;
+    totalScore = 0;
+    currentCombo = 0;
+    lastCorrectAnswerTime = null;
+    notifyListeners();
   }
 
   void pauseTimer() {
@@ -842,7 +872,7 @@ void addHeart() {
               number != 0 &&
               oldValue != number) {
             final correctAnswer =
-                solutions[currentStage][selectedRow!][selectedCol!];
+                currentSolution[selectedRow!][selectedCol!];
             if (number == correctAnswer) {
               correctCells[selectedRow!][selectedCol!] = true;
               SoundHelper.playCorrectSound();
@@ -854,7 +884,7 @@ void addHeart() {
               final completionResult = _checkCompletions(selectedRow!, selectedCol!);
 
               // 기본 점수 + 라인 보너스 계산
-              final scores = scoreTable[currentDifficulty] ?? scoreTable['easy']!;
+              final scores = scoreTable[currentDifficulty] ?? scoreTable['normal']!;
               int earnedScore = scores['base']! + completionResult.bonusScore;
 
               // 콤보 보너스

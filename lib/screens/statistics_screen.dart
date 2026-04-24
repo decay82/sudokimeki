@@ -16,30 +16,27 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   late TabController _tabController;
 
   GameStatistics beginnerStats = GameStatistics();
-  GameStatistics rookieStats = GameStatistics();
   GameStatistics easyStats = GameStatistics();
-  GameStatistics mediumStats = GameStatistics();
+  GameStatistics normalStats = GameStatistics();
   GameStatistics hardStats = GameStatistics();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _loadStatistics();
   }
 
   Future<void> _loadStatistics() async {
     final beginner = await StatisticsStorage.getStatistics('beginner');
-    final rookie = await StatisticsStorage.getStatistics('rookie');
     final easy = await StatisticsStorage.getStatistics('easy');
-    final medium = await StatisticsStorage.getStatistics('medium');
+    final normal = await StatisticsStorage.getStatistics('normal');
     final hard = await StatisticsStorage.getStatistics('hard');
 
     setState(() {
       beginnerStats = beginner;
-      rookieStats = rookie;
       easyStats = easy;
-      mediumStats = medium;
+      normalStats = normal;
       hardStats = hard;
     });
   }
@@ -236,9 +233,8 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                 controller: _tabController,
                 tabs: [
                   Tab(text: l10n.difficultyBeginner),
-                  Tab(text: l10n.difficultyRookie),
                   Tab(text: l10n.difficultyEasy),
-                  Tab(text: l10n.difficultyMedium),
+                  Tab(text: l10n.difficultyNormal),
                   Tab(text: l10n.difficultyHard),
                 ],
               ),
@@ -272,9 +268,8 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                 controller: _tabController,
                 tabs: [
                   Tab(text: l10n.difficultyBeginner),
-                  Tab(text: l10n.difficultyRookie),
                   Tab(text: l10n.difficultyEasy),
-                  Tab(text: l10n.difficultyMedium),
+                  Tab(text: l10n.difficultyNormal),
                   Tab(text: l10n.difficultyHard),
                 ],
               ),
@@ -284,9 +279,8 @@ class _StatisticsScreenState extends State<StatisticsScreen>
               controller: _tabController,
               children: [
                 _buildStatsContent(beginnerStats, 'beginner', l10n.difficultyBeginner, context),
-                _buildStatsContent(rookieStats, 'rookie', l10n.difficultyRookie, context),
                 _buildStatsContent(easyStats, 'easy', l10n.difficultyEasy, context),
-                _buildStatsContent(mediumStats, 'medium', l10n.difficultyMedium, context),
+                _buildStatsContent(normalStats, 'normal', l10n.difficultyNormal, context),
                 _buildStatsContent(hardStats, 'hard', l10n.difficultyHard, context),
               ],
             ),

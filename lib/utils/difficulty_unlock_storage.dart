@@ -6,24 +6,22 @@ import 'localization_helper.dart';
 class DifficultyUnlockStorage {
   // 난이도별 완료 횟수 키
   static const String _keyBeginnerCompleted = 'difficulty_beginner_completed';
-  static const String _keyRookieCompleted = 'difficulty_rookie_completed';
   static const String _keyEasyCompleted = 'difficulty_easy_completed';
-  static const String _keyMediumCompleted = 'difficulty_medium_completed';
+  static const String _keyNormalCompleted = 'difficulty_normal_completed';
   static const String _keyHardCompleted = 'difficulty_hard_completed';
 
   // 난이도별 잠금 해제 조건
   static const Map<String, Map<String, dynamic>> unlockRequirements = {
     'beginner': {'required': 0, 'previousDifficulty': null},
-    'rookie': {'required': 0, 'previousDifficulty': null},
-    'easy': {'required': 2, 'previousDifficulty': 'rookie'},
-    'medium': {'required': 4, 'previousDifficulty': 'easy'},
-    'hard': {'required': 10, 'previousDifficulty': 'medium'},
+    'easy':     {'required': 0, 'previousDifficulty': null},
+    'normal':   {'required': 2, 'previousDifficulty': 'easy'},
+    'hard':     {'required': 4, 'previousDifficulty': 'normal'},
   };
 
   // 난이도별 설명
   static const Map<String, String> difficultyDescriptions = {
-    'beginner': 'Beginner - 처음 시작하는 난이도',
-    'rookie': 'Rookie - 연습하기 좋은 난이도',
+    'beginner': '비기너 - 처음 시작하는 난이도',
+    'easy':     '이지 - 연습하기 좋은 난이도',
   };
 
   // 난이도별 완료 횟수 증가
@@ -87,12 +85,10 @@ class DifficultyUnlockStorage {
     switch (difficulty) {
       case 'beginner':
         return _keyBeginnerCompleted;
-      case 'rookie':
-        return _keyRookieCompleted;
       case 'easy':
         return _keyEasyCompleted;
-      case 'medium':
-        return _keyMediumCompleted;
+      case 'normal':
+        return _keyNormalCompleted;
       case 'hard':
         return _keyHardCompleted;
       default:
@@ -103,7 +99,7 @@ class DifficultyUnlockStorage {
   // 디버그: 모든 완료 횟수 출력
   static Future<void> printAllProgress() async {
     print('=== 난이도별 완료 횟수 ===');
-    for (var difficulty in ['beginner', 'rookie', 'easy', 'medium', 'hard']) {
+    for (var difficulty in ['beginner', 'easy', 'normal', 'hard']) {
       final completed = await getCompleted(difficulty);
       final unlocked = await isUnlocked(difficulty);
       print('$difficulty: $completed번 완료, 잠금해제: $unlocked');
@@ -114,9 +110,8 @@ class DifficultyUnlockStorage {
   static Future<void> resetAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyBeginnerCompleted);
-    await prefs.remove(_keyRookieCompleted);
     await prefs.remove(_keyEasyCompleted);
-    await prefs.remove(_keyMediumCompleted);
+    await prefs.remove(_keyNormalCompleted);
     await prefs.remove(_keyHardCompleted);
     print('모든 난이도 진행률 초기화됨');
   }

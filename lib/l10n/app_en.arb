@@ -6,19 +6,14 @@
     "description": "Beginner difficulty level"
   },
 
-  "difficultyRookie": "Rookie",
-  "@difficultyRookie": {
-    "description": "Rookie difficulty level"
-  },
-
   "difficultyEasy": "Easy",
   "@difficultyEasy": {
     "description": "Easy difficulty level"
   },
 
-  "difficultyMedium": "Medium",
-  "@difficultyMedium": {
-    "description": "Medium difficulty level"
+  "difficultyNormal": "Normal",
+  "@difficultyNormal": {
+    "description": "Normal difficulty level"
   },
 
   "difficultyHard": "Hard",
@@ -32,9 +27,8 @@
   },
 
   "difficultyBeginnerDesc": "Beginner - For first-time players",
-  "difficultyRookieDesc": "Rookie - Good for practice",
-  "difficultyEasyDesc": "Easy - Easy level",
-  "difficultyMediumDesc": "Medium - Normal level",
+  "difficultyEasyDesc": "Easy - Good for practice",
+  "difficultyNormalDesc": "Normal - Normal level",
   "difficultyHardDesc": "Hard - Difficult level",
 
   "selectDifficulty": "Select Difficulty",

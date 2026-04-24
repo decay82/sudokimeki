@@ -215,3 +215,16 @@ Set<String> conflictingCells       // Wrong cells for blink animation (e.g., "5_
 3. **Hint Request**: Watch rewarded ad → `useHint()` reveals answer
 4. **Game Over**: Rewarded ad option to restore 1 heart
 5. **Banner Ad**: Displayed at bottom of SudokuScreen (mobile only, not on web)
+
+---
+
+## Blog Writing Guide
+
+When writing blog posts about this project or AI-assisted development:
+- **Refer to**: `.claude/blog_style_guide.md`
+- **Tone**: Friendly, honest, from a game planner's perspective (not a professional developer)
+- **Target audience**: Non-developers, game planners, AI beginners
+- **Key messages**: CLI-based AI usage, planning document first, Flutter for AI-friendly development
+- **Style**: Practical tips, honest revenue sharing, concrete examples with prompts
+
+For detailed guidelines on tone, structure, and content style, always check the blog style guide file.

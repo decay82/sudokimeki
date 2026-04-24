@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:math';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:in_app_update/in_app_update.dart';
 import '../models/sudoku_game.dart';
@@ -8,9 +7,7 @@ import '../utils/game_storage.dart';
 import '../utils/ad_helper.dart';
 import '../utils/play_counter.dart';
 import '../utils/difficulty_unlock_storage.dart';
-import '../utils/localization_helper.dart';
 import '../l10n/app_localizations.dart';
-import '../data/puzzle_data.dart';
 import 'sudoku_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -55,32 +52,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   if (hasSaved) {
     final savedData = await GameStorage.loadGame();
     if (savedData != null) {
-      final currentStage = savedData['currentStage'] as int;
+      final currentDifficulty = savedData['currentDifficulty'] as String? ?? 'beginner';
       final elapsedSeconds = savedData['elapsedSeconds'] as int;
 
-      // ✅ l10n을 여기서 먼저 가져오기
       final l10n = AppLocalizations.of(context)!;
 
-      String difficultyText = l10n.difficultyUnknown;  // ✅ '알 수 없음' 번역
-      if (currentStage < PuzzleData.difficulties.length) {
-        final difficulty = PuzzleData.difficulties[currentStage];
-        switch (difficulty) {
-          case 'beginner':
-            difficultyText = l10n.difficultyBeginner;  // ✅ difficultyText = 추가
-            break;
-          case 'rookie':
-            difficultyText = l10n.difficultyRookie;  // ✅ difficultyText = 추가, ) 제거
-            break;
-          case 'easy':
-            difficultyText = l10n.difficultyEasy;  // ✅ 번역 적용
-            break;
-          case 'medium':
-            difficultyText = l10n.difficultyMedium;  // ✅ 번역 적용
-            break;
-          case 'hard':
-            difficultyText = l10n.difficultyHard;  // ✅ 번역 적용
-            break;
-        }
+      String difficultyText = l10n.difficultyUnknown;
+      switch (currentDifficulty) {
+        case 'beginner':
+          difficultyText = l10n.difficultyBeginner;
+          break;
+        case 'easy':
+          difficultyText = l10n.difficultyEasy;
+          break;
+        case 'normal':
+          difficultyText = l10n.difficultyNormal;
+          break;
+        case 'hard':
+          difficultyText = l10n.difficultyHard;
+          break;
       }
 
       final minutes = elapsedSeconds ~/ 60;
@@ -146,8 +136,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   children: [
                     _buildDifficultyButton(
                       context: context,
-                      label: l10n.difficultyBeginner,  // ✅ '입문자' → 번역 키
-                      description: l10n.difficultyBeginnerDesc,  // ✅ 설명도 번역
+                      label: l10n.difficultyBeginner,
+                      description: l10n.difficultyBeginnerDesc,
                       color: Colors.lightBlue,
                       difficulty: 'beginner',
                       isUnlocked: unlockStatus['beginner'] ?? true,
@@ -156,39 +146,29 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     const SizedBox(height: 12),
                     _buildDifficultyButton(
                       context: context,
-                      label: l10n.difficultyRookie,  // ✅ '초보자' → 번역 키
-                      description: l10n.difficultyRookieDesc,  // ✅ 설명도 번역
+                      label: l10n.difficultyEasy,
+                      description: l10n.difficultyEasyDesc,
                       color: Colors.cyan,
-                      difficulty: 'rookie',
-                      isUnlocked: unlockStatus['rookie'] ?? true,
-                      progressText: progressTexts['rookie'] ?? '',
-                    ),
-                    const SizedBox(height: 12),
-                    _buildDifficultyButton(
-                      context: context,
-                      label: l10n.difficultyEasy,  // ✅ '초급' → 번역 키
-                      description: l10n.difficultyEasyDesc,  // ✅ 설명도 번역
-                      color: Colors.green,
                       difficulty: 'easy',
-                      isUnlocked: unlockStatus['easy'] ?? false,
+                      isUnlocked: unlockStatus['easy'] ?? true,
                       progressText: progressTexts['easy'] ?? '',
                     ),
                     const SizedBox(height: 12),
                     _buildDifficultyButton(
                       context: context,
-                      label: l10n.difficultyMedium,  // ✅ '중급' → 번역 키
-                      description: l10n.difficultyMediumDesc,  // ✅ 설명도 번역
-                      color: Colors.orange,
-                      difficulty: 'medium',
-                      isUnlocked: unlockStatus['medium'] ?? false,
-                      progressText: progressTexts['medium'] ?? '',
+                      label: l10n.difficultyNormal,
+                      description: l10n.difficultyNormalDesc,
+                      color: Colors.green,
+                      difficulty: 'normal',
+                      isUnlocked: unlockStatus['normal'] ?? false,
+                      progressText: progressTexts['normal'] ?? '',
                     ),
                     const SizedBox(height: 12),
                     _buildDifficultyButton(
                       context: context,
-                      label: l10n.difficultyHard,  // ✅ '고급' → 번역 키
-                      description: l10n.difficultyHardDesc,  // ✅ 설명도 번역
-                      color: Colors.red,
+                      label: l10n.difficultyHard,
+                      description: l10n.difficultyHardDesc,
+                      color: Colors.orange,
                       difficulty: 'hard',
                       isUnlocked: unlockStatus['hard'] ?? false,
                       progressText: progressTexts['hard'] ?? '',
@@ -213,20 +193,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Future<Map<String, bool>> _checkAllDifficultiesUnlocked() async {
     return {
       'beginner': await DifficultyUnlockStorage.isUnlocked('beginner'),
-      'rookie': await DifficultyUnlockStorage.isUnlocked('rookie'),
-      'easy': await DifficultyUnlockStorage.isUnlocked('easy'),
-      'medium': await DifficultyUnlockStorage.isUnlocked('medium'),
-      'hard': await DifficultyUnlockStorage.isUnlocked('hard'),
+      'easy':     await DifficultyUnlockStorage.isUnlocked('easy'),
+      'normal':   await DifficultyUnlockStorage.isUnlocked('normal'),
+      'hard':     await DifficultyUnlockStorage.isUnlocked('hard'),
     };
   }
 
   Future<Map<String, String>> _getAllProgressTexts(BuildContext context) async {
     return {
       'beginner': await DifficultyUnlockStorage.getUnlockProgressText(context, 'beginner'),
-      'rookie': await DifficultyUnlockStorage.getUnlockProgressText(context, 'rookie'),
-      'easy': await DifficultyUnlockStorage.getUnlockProgressText(context, 'easy'),
-      'medium': await DifficultyUnlockStorage.getUnlockProgressText(context, 'medium'),
-      'hard': await DifficultyUnlockStorage.getUnlockProgressText(context, 'hard'),
+      'easy':     await DifficultyUnlockStorage.getUnlockProgressText(context, 'easy'),
+      'normal':   await DifficultyUnlockStorage.getUnlockProgressText(context, 'normal'),
+      'hard':     await DifficultyUnlockStorage.getUnlockProgressText(context, 'hard'),
     };
   }
 
@@ -322,34 +300,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   await GameStorage.clearSavedGame();
 
-  final puzzlesOfDifficulty = <int>[];
-  for (int i = 0; i < PuzzleData.difficulties.length; i++) {
-    if (PuzzleData.difficulties[i] == difficulty) {
-      puzzlesOfDifficulty.add(i);
-    }
-  }
-
-  if (puzzlesOfDifficulty.isEmpty) {
-    if (!mounted) return;
-    
-    // ✅ l10n 추가
-    final l10n = AppLocalizations.of(context)!;
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.noPuzzlesForDifficulty(
-          getDifficultyName(context, difficulty)  // ✅ 난이도 이름을 번역해서 전달
-        )),
-      ),
-    );
-    return;
-  }
-
-  final random = Random();
-  final randomStage =
-      puzzlesOfDifficulty[random.nextInt(puzzlesOfDifficulty.length)];
-
-  game.loadStage(randomStage, difficulty: difficulty);
+  // generator가 퍼즐을 생성하므로 stage 인덱스 불필요
+  game.loadStage(0, difficulty: difficulty);
 
   if (!mounted) return;
   Navigator.of(context).pushReplacement(

@@ -10,14 +10,6 @@ class WeeklyScoreLimits {
         'bot1stMax': 406980, // 428,400의 95% = 406,980점
         'weeklyMax': 428400, // 주간 최대 = 하루 최대 × 7
       },
-      'rookie': {
-        'avgScorePerGame': 600,
-        'gamesPerHour': 7,
-        'dailyPlayHours': 17,
-        'user1stScore': 499800, // 600 * 7 * 17 * 7 = 499,800점
-        'bot1stMax': 474810, // 95%
-        'weeklyMax': 499800,
-      },
       'easy': {
         'avgScorePerGame': 600,
         'gamesPerHour': 7,
@@ -26,12 +18,12 @@ class WeeklyScoreLimits {
         'bot1stMax': 474810,
         'weeklyMax': 499800,
       },
-      'medium': {
+      'normal': {
         'avgScorePerGame': 1000,
         'gamesPerHour': 5,
         'dailyPlayHours': 17,
-        'user1stScore': 595000, // 1000 * 5 * 17 * 7 = 595,000점
-        'bot1stMax': 565250, // 95%
+        'user1stScore': 595000,
+        'bot1stMax': 565250,
         'weeklyMax': 595000,
       },
       'hard': {

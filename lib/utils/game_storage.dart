@@ -5,9 +5,10 @@ class GameStorage {
   static const String _keySavedGame = 'saved_game';
 
   static Future<void> saveGame({
-    required int currentStage,
+    required String currentDifficulty,
     required List<List<int>> board,
     required List<List<int>> initialBoard,
+    required List<List<int>> solution,
     required List<List<Set<int>>> memos,
     required List<List<bool>> correctCells,
     required int hearts,
@@ -23,9 +24,10 @@ class GameStorage {
         .toList();
 
     final gameData = {
-      'currentStage': currentStage,
+      'currentDifficulty': currentDifficulty,
       'board': board,
       'initialBoard': initialBoard,
+      'solution': solution,
       'memos': memosJson,
       'correctCells': correctCells,
       'hearts': hearts,
@@ -56,6 +58,10 @@ class GameStorage {
         .map((row) => (row as List).map((e) => e as int).toList())
         .toList();
 
+    final solution = (gameData['solution'] as List)
+        .map((row) => (row as List).map((e) => e as int).toList())
+        .toList();
+
     final memos = (gameData['memos'] as List)
         .map((row) => (row as List)
             .map((cell) => (cell as List).map((e) => e as int).toSet())
@@ -70,9 +76,10 @@ class GameStorage {
         (gameData['completedLines'] as List).map((e) => e as String).toSet();
 
     return {
-      'currentStage': gameData['currentStage'],
+      'currentDifficulty': gameData['currentDifficulty'] ?? 'easy',
       'board': board,
       'initialBoard': initialBoard,
+      'solution': solution,
       'memos': memos,
       'correctCells': correctCells,
       'hearts': gameData['hearts'],

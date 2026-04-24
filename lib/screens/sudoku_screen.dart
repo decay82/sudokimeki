@@ -544,12 +544,12 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButton(
                 context: context,
                 game: game,
-                label: l10n.difficultyRookie,
-                description: l10n.difficultyRookieDesc,
+                label: l10n.difficultyEasy,
+                description: l10n.difficultyEasyDesc,
                 color: Colors.cyan,
-                difficulty: 'rookie',
-                isUnlocked: unlockedStatus['rookie'] ?? false,
-                progressText: progressTexts['rookie'] ?? '',
+                difficulty: 'easy',
+                isUnlocked: unlockedStatus['easy'] ?? false,
+                progressText: progressTexts['easy'] ?? '',
               ),
               const SizedBox(height: 12),
               _buildDifficultyButton(
@@ -566,12 +566,12 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButton(
                 context: context,
                 game: game,
-                label: l10n.difficultyMedium,
-                description: l10n.difficultyMediumDesc,
-                color: Colors.orange,
-                difficulty: 'medium',
-                isUnlocked: unlockedStatus['medium'] ?? false,
-                progressText: progressTexts['medium'] ?? '',
+                label: l10n.difficultyNormal,
+                description: l10n.difficultyNormalDesc,
+                color: Colors.green,
+                difficulty: 'normal',
+                isUnlocked: unlockedStatus['normal'] ?? false,
+                progressText: progressTexts['normal'] ?? '',
               ),
               const SizedBox(height: 12),
               _buildDifficultyButton(
@@ -714,20 +714,18 @@ class _SudokuScreenState extends State<SudokuScreen> {
   Future<Map<String, bool>> _checkAllDifficultiesUnlocked() async {
     return {
       'beginner': await DifficultyUnlockStorage.isUnlocked('beginner'),
-      'rookie': await DifficultyUnlockStorage.isUnlocked('rookie'),
-      'easy': await DifficultyUnlockStorage.isUnlocked('easy'),
-      'medium': await DifficultyUnlockStorage.isUnlocked('medium'),
-      'hard': await DifficultyUnlockStorage.isUnlocked('hard'),
+      'easy':     await DifficultyUnlockStorage.isUnlocked('easy'),
+      'normal':   await DifficultyUnlockStorage.isUnlocked('normal'),
+      'hard':     await DifficultyUnlockStorage.isUnlocked('hard'),
     };
   }
 
   Future<Map<String, String>> _getAllProgressTexts(BuildContext context) async {
     return {
       'beginner': await DifficultyUnlockStorage.getUnlockProgressText(context, 'beginner'),
-      'rookie': await DifficultyUnlockStorage.getUnlockProgressText(context, 'rookie'),
-      'easy': await DifficultyUnlockStorage.getUnlockProgressText(context, 'easy'),
-      'medium': await DifficultyUnlockStorage.getUnlockProgressText(context, 'medium'),
-      'hard': await DifficultyUnlockStorage.getUnlockProgressText(context, 'hard'),
+      'easy':     await DifficultyUnlockStorage.getUnlockProgressText(context, 'easy'),
+      'normal':   await DifficultyUnlockStorage.getUnlockProgressText(context, 'normal'),
+      'hard':     await DifficultyUnlockStorage.getUnlockProgressText(context, 'hard'),
     };
   }
 
@@ -766,12 +764,12 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButtonFromGameOver(
                 context: context,
                 game: game,
-                label: l10n.difficultyRookie,
-                description: l10n.difficultyRookieDesc,
+                label: l10n.difficultyEasy,
+                description: l10n.difficultyEasyDesc,
                 color: Colors.cyan,
-                difficulty: 'rookie',
-                isUnlocked: unlockedStatus['rookie'] ?? false,
-                progressText: progressTexts['rookie'] ?? '',
+                difficulty: 'easy',
+                isUnlocked: unlockedStatus['easy'] ?? false,
+                progressText: progressTexts['easy'] ?? '',
               ),
               const SizedBox(height: 12),
               _buildDifficultyButtonFromGameOver(
@@ -788,12 +786,12 @@ class _SudokuScreenState extends State<SudokuScreen> {
               _buildDifficultyButtonFromGameOver(
                 context: context,
                 game: game,
-                label: l10n.difficultyMedium,
-                description: l10n.difficultyMediumDesc,
-                color: Colors.orange,
-                difficulty: 'medium',
-                isUnlocked: unlockedStatus['medium'] ?? false,
-                progressText: progressTexts['medium'] ?? '',
+                label: l10n.difficultyNormal,
+                description: l10n.difficultyNormalDesc,
+                color: Colors.green,
+                difficulty: 'normal',
+                isUnlocked: unlockedStatus['normal'] ?? false,
+                progressText: progressTexts['normal'] ?? '',
               ),
               const SizedBox(height: 12),
               _buildDifficultyButtonFromGameOver(
@@ -1043,28 +1041,22 @@ class _SudokuScreenState extends State<SudokuScreen> {
     final game = context.watch<SudokuGame>();
     final l10n = AppLocalizations.of(context)!;
 
-    String difficultyText = l10n.unknown;
-    if (game.currentStage < PuzzleData.difficulties.length) {
-      final difficulty = PuzzleData.difficulties[game.currentStage];
-      switch (difficulty) {
-        case 'beginner':
-          difficultyText = l10n.difficultyBeginner;
-          break;
-        case 'rookie':
-          difficultyText = l10n.difficultyRookie;
-          break;
-        case 'easy':
-          difficultyText = l10n.difficultyEasy;
-          break;
-        case 'medium':
-          difficultyText = l10n.difficultyMedium;
-          break;
-        case 'hard':
-          difficultyText = l10n.difficultyHard;
-          break;
-        default:
-          difficultyText = difficulty;
-      }
+    String difficultyText;
+    switch (game.currentDifficulty) {
+      case 'beginner':
+        difficultyText = l10n.difficultyBeginner;
+        break;
+      case 'easy':
+        difficultyText = l10n.difficultyEasy;
+        break;
+      case 'normal':
+        difficultyText = l10n.difficultyNormal;
+        break;
+      case 'hard':
+        difficultyText = l10n.difficultyHard;
+        break;
+      default:
+        difficultyText = l10n.unknown;
     }
 
     return Stack(

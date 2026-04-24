@@ -1,18 +1,16 @@
 {
   "@@locale": "ko",
 
-  "difficultyBeginner": "입문자",
-  "difficultyRookie": "초보자",
-  "difficultyEasy": "초급",
-  "difficultyMedium": "중급",
-  "difficultyHard": "고급",
+  "difficultyBeginner": "비기너",
+  "difficultyEasy": "이지",
+  "difficultyNormal": "노멀",
+  "difficultyHard": "하드",
   "difficultyUnknown": "알 수 없음",
 
-  "difficultyBeginnerDesc": "Beginner - 처음 시작하는 난이도",
-  "difficultyRookieDesc": "Rookie - 연습하기 좋은 난이도",
-  "difficultyEasyDesc": "Easy - 쉬운 난이도",
-  "difficultyMediumDesc": "Medium - 보통 난이도",
-  "difficultyHardDesc": "Hard - 어려운 난이도",
+  "difficultyBeginnerDesc": "비기너 - 처음 시작하는 난이도",
+  "difficultyEasyDesc": "이지 - 연습하기 좋은 난이도",
+  "difficultyNormalDesc": "노멀 - 보통 난이도",
+  "difficultyHardDesc": "하드 - 어려운 난이도",
 
   "selectDifficulty": "난이도 선택",
   "cancel": "취소",

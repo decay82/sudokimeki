@@ -8,12 +8,10 @@ String getDifficultyName(BuildContext context, String difficulty) {
   switch (difficulty.toLowerCase()) {
     case 'beginner':
       return l10n.difficultyBeginner;
-    case 'rookie':
-      return l10n.difficultyRookie;
     case 'easy':
       return l10n.difficultyEasy;
-    case 'medium':
-      return l10n.difficultyMedium;
+    case 'normal':
+      return l10n.difficultyNormal;
     case 'hard':
       return l10n.difficultyHard;
     default:
@@ -28,12 +26,10 @@ String getDifficultyDescription(BuildContext context, String difficulty) {
   switch (difficulty.toLowerCase()) {
     case 'beginner':
       return l10n.difficultyBeginnerDesc;
-    case 'rookie':
-      return l10n.difficultyRookieDesc;
     case 'easy':
       return l10n.difficultyEasyDesc;
-    case 'medium':
-      return l10n.difficultyMediumDesc;
+    case 'normal':
+      return l10n.difficultyNormalDesc;
     case 'hard':
       return l10n.difficultyHardDesc;
     default:

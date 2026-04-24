@@ -12,13 +12,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get difficultyBeginner => 'Beginner';
 
   @override
-  String get difficultyRookie => 'Rookie';
-
-  @override
   String get difficultyEasy => 'Easy';
 
   @override
-  String get difficultyMedium => 'Medium';
+  String get difficultyNormal => 'Normal';
 
   @override
   String get difficultyHard => 'Hard';
@@ -30,13 +27,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get difficultyBeginnerDesc => 'Beginner - For first-time players';
 
   @override
-  String get difficultyRookieDesc => 'Rookie - Good for practice';
+  String get difficultyEasyDesc => 'Easy - Good for practice';
 
   @override
-  String get difficultyEasyDesc => 'Easy - Easy level';
-
-  @override
-  String get difficultyMediumDesc => 'Medium - Normal level';
+  String get difficultyNormalDesc => 'Normal - Normal level';
 
   @override
   String get difficultyHardDesc => 'Hard - Difficult level';

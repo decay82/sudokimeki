@@ -13,12 +13,12 @@ class RankingHistoryStorage {
 
     // 각 난이도별 내 순위 가져오기
     final easyRank = await WeeklyBotRanking.getMyCurrentRank('easy');
-    final mediumRank = await WeeklyBotRanking.getMyCurrentRank('medium');
+    final normalRank = await WeeklyBotRanking.getMyCurrentRank('normal');
     final hardRank = await WeeklyBotRanking.getMyCurrentRank('hard');
 
     // 각 난이도별 내 점수 가져오기
     final easyScore = await WeeklyBotRanking.getMyWeeklyScore('easy', weekId);
-    final mediumScore = await WeeklyBotRanking.getMyWeeklyScore('medium', weekId);
+    final normalScore = await WeeklyBotRanking.getMyWeeklyScore('normal', weekId);
     final hardScore = await WeeklyBotRanking.getMyWeeklyScore('hard', weekId);
 
     // 기록이 있는 난이도만 저장
@@ -28,8 +28,8 @@ class RankingHistoryStorage {
       records['easy'] = RankingRecord(rank: easyRank, score: easyScore);
     }
 
-    if (mediumRank != null && mediumScore > 0) {
-      records['medium'] = RankingRecord(rank: mediumRank, score: mediumScore);
+    if (normalRank != null && normalScore > 0) {
+      records['normal'] = RankingRecord(rank: normalRank, score: normalScore);
     }
 
     if (hardRank != null && hardScore > 0) {

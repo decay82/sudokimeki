@@ -47,9 +47,9 @@ class BotNameGenerator {
   static String generateName({required int seed, required String difficulty}) {
     List<String> pool;
 
-    if (difficulty == 'beginner' || difficulty == 'rookie' || difficulty == 'easy') {
+    if (difficulty == 'beginner' || difficulty == 'easy') {
       pool = easyPoolNames;
-    } else if (difficulty == 'medium') {
+    } else if (difficulty == 'normal') {
       pool = mediumPoolNames;
     } else if (difficulty == 'hard') {
       pool = hardPoolNames;

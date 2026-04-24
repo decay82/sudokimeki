@@ -100,7 +100,7 @@ class _RankingHistoryScreenState extends State<RankingHistoryScreen> {
             // 난이도별 결과
             _buildDifficultyRow(context, 'easy', history.records['easy']),
             const SizedBox(height: 8),
-            _buildDifficultyRow(context, 'medium', history.records['medium']),
+            _buildDifficultyRow(context, 'normal', history.records['normal']),
             const SizedBox(height: 8),
             _buildDifficultyRow(context, 'hard', history.records['hard']),
           ],

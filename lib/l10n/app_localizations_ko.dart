@@ -9,37 +9,31 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
-  String get difficultyBeginner => '입문자';
+  String get difficultyBeginner => '비기너';
 
   @override
-  String get difficultyRookie => '초보자';
+  String get difficultyEasy => '이지';
 
   @override
-  String get difficultyEasy => '초급';
+  String get difficultyNormal => '노멀';
 
   @override
-  String get difficultyMedium => '중급';
-
-  @override
-  String get difficultyHard => '고급';
+  String get difficultyHard => '하드';
 
   @override
   String get difficultyUnknown => '알 수 없음';
 
   @override
-  String get difficultyBeginnerDesc => 'Beginner - 처음 시작하는 난이도';
+  String get difficultyBeginnerDesc => '비기너 - 처음 시작하는 난이도';
 
   @override
-  String get difficultyRookieDesc => 'Rookie - 연습하기 좋은 난이도';
+  String get difficultyEasyDesc => '이지 - 연습하기 좋은 난이도';
 
   @override
-  String get difficultyEasyDesc => 'Easy - 쉬운 난이도';
+  String get difficultyNormalDesc => '노멀 - 보통 난이도';
 
   @override
-  String get difficultyMediumDesc => 'Medium - 보통 난이도';
-
-  @override
-  String get difficultyHardDesc => 'Hard - 어려운 난이도';
+  String get difficultyHardDesc => '하드 - 어려운 난이도';
 
   @override
   String get selectDifficulty => '난이도 선택';

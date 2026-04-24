@@ -104,23 +104,17 @@ abstract class AppLocalizations {
   /// **'Beginner'**
   String get difficultyBeginner;
 
-  /// Rookie difficulty level
-  ///
-  /// In en, this message translates to:
-  /// **'Rookie'**
-  String get difficultyRookie;
-
   /// Easy difficulty level
   ///
   /// In en, this message translates to:
   /// **'Easy'**
   String get difficultyEasy;
 
-  /// Medium difficulty level
+  /// Normal difficulty level
   ///
   /// In en, this message translates to:
-  /// **'Medium'**
-  String get difficultyMedium;
+  /// **'Normal'**
+  String get difficultyNormal;
 
   /// Hard difficulty level
   ///
@@ -140,23 +134,17 @@ abstract class AppLocalizations {
   /// **'Beginner - For first-time players'**
   String get difficultyBeginnerDesc;
 
-  /// No description provided for @difficultyRookieDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Rookie - Good for practice'**
-  String get difficultyRookieDesc;
-
   /// No description provided for @difficultyEasyDesc.
   ///
   /// In en, this message translates to:
-  /// **'Easy - Easy level'**
+  /// **'Easy - Good for practice'**
   String get difficultyEasyDesc;
 
-  /// No description provided for @difficultyMediumDesc.
+  /// No description provided for @difficultyNormalDesc.
   ///
   /// In en, this message translates to:
-  /// **'Medium - Normal level'**
-  String get difficultyMediumDesc;
+  /// **'Normal - Normal level'**
+  String get difficultyNormalDesc;
 
   /// No description provided for @difficultyHardDesc.
   ///

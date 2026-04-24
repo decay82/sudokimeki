@@ -29,7 +29,7 @@ class _RankingScreenState extends State<RankingScreen>
   final ScrollController _hardScrollController = ScrollController();
 
   List<RankingEntry> easyRanking = [];
-  List<RankingEntry> mediumRanking = [];
+  List<RankingEntry> normalRanking = [];
   List<RankingEntry> hardRanking = [];
 
   bool isLoading = true;
@@ -129,12 +129,12 @@ class _RankingScreenState extends State<RankingScreen>
 
     // 각 난이도별 랭킹 로드 (초급, 중급, 고급만)
     final easy = await WeeklyBotRanking.generateWeeklyRanking('easy');
-    final medium = await WeeklyBotRanking.generateWeeklyRanking('medium');
+    final normal = await WeeklyBotRanking.generateWeeklyRanking('normal');
     final hard = await WeeklyBotRanking.generateWeeklyRanking('hard');
 
     setState(() {
       easyRanking = easy;
-      mediumRanking = medium;
+      normalRanking = normal;
       hardRanking = hard;
       isLoading = false;
     });
@@ -155,7 +155,7 @@ class _RankingScreenState extends State<RankingScreen>
         controller = _easyScrollController;
         break;
       case 1:
-        ranking = mediumRanking;
+        ranking = normalRanking;
         controller = _mediumScrollController;
         break;
       case 2:
@@ -342,7 +342,7 @@ class _RankingScreenState extends State<RankingScreen>
                 controller: _tabController,
                 tabs: [
                   Tab(text: l10n.difficultyEasy),
-                  Tab(text: l10n.difficultyMedium),
+                  Tab(text: l10n.difficultyNormal),
                   Tab(text: l10n.difficultyHard),
                 ],
               ),
@@ -402,7 +402,7 @@ class _RankingScreenState extends State<RankingScreen>
                 controller: _tabController,
                 tabs: [
                   Tab(text: l10n.difficultyEasy),
-                  Tab(text: l10n.difficultyMedium),
+                  Tab(text: l10n.difficultyNormal),
                   Tab(text: l10n.difficultyHard),
                 ],
               ),
@@ -412,7 +412,7 @@ class _RankingScreenState extends State<RankingScreen>
               controller: _tabController,
               children: [
                 _buildRankingList(easyRanking, _easyScrollController),
-                _buildRankingList(mediumRanking, _mediumScrollController),
+                _buildRankingList(normalRanking, _mediumScrollController),
                 _buildRankingList(hardRanking, _hardScrollController),
               ],
             ),

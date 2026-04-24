@@ -354,33 +354,25 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                       ),
                       const SizedBox(height: 8),
                       _buildDifficultyButton(
-                        l10n.difficultyRookie,
-                        'rookie',
-                        Colors.cyan,
-                        unlockStatus['rookie'] ?? true,
-                        progressTexts['rookie'] ?? '',
-                      ),
-                      const SizedBox(height: 8),
-                      _buildDifficultyButton(
                         l10n.difficultyEasy,
                         'easy',
-                        Colors.green,
-                        unlockStatus['easy'] ?? false,
+                        Colors.cyan,
+                        unlockStatus['easy'] ?? true,
                         progressTexts['easy'] ?? '',
                       ),
                       const SizedBox(height: 8),
                       _buildDifficultyButton(
-                        l10n.difficultyMedium,
-                        'medium',
-                        Colors.orange,
-                        unlockStatus['medium'] ?? false,
-                        progressTexts['medium'] ?? '',
+                        l10n.difficultyNormal,
+                        'normal',
+                        Colors.green,
+                        unlockStatus['normal'] ?? false,
+                        progressTexts['normal'] ?? '',
                       ),
                       const SizedBox(height: 8),
                       _buildDifficultyButton(
                         l10n.difficultyHard,
                         'hard',
-                        Colors.red,
+                        Colors.orange,
                         unlockStatus['hard'] ?? false,
                         progressTexts['hard'] ?? '',
                       ),
@@ -404,20 +396,18 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
   Future<Map<String, bool>> _checkAllDifficultiesUnlocked() async {
     return {
       'beginner': await DifficultyUnlockStorage.isUnlocked('beginner'),
-      'rookie': await DifficultyUnlockStorage.isUnlocked('rookie'),
-      'easy': await DifficultyUnlockStorage.isUnlocked('easy'),
-      'medium': await DifficultyUnlockStorage.isUnlocked('medium'),
-      'hard': await DifficultyUnlockStorage.isUnlocked('hard'),
+      'easy':     await DifficultyUnlockStorage.isUnlocked('easy'),
+      'normal':   await DifficultyUnlockStorage.isUnlocked('normal'),
+      'hard':     await DifficultyUnlockStorage.isUnlocked('hard'),
     };
   }
 
   Future<Map<String, String>> _getAllProgressTexts(BuildContext context) async {
     return {
       'beginner': await DifficultyUnlockStorage.getUnlockProgressText(context, 'beginner'),
-      'rookie': await DifficultyUnlockStorage.getUnlockProgressText(context, 'rookie'),
-      'easy': await DifficultyUnlockStorage.getUnlockProgressText(context, 'easy'),
-      'medium': await DifficultyUnlockStorage.getUnlockProgressText(context, 'medium'),
-      'hard': await DifficultyUnlockStorage.getUnlockProgressText(context, 'hard'),
+      'easy':     await DifficultyUnlockStorage.getUnlockProgressText(context, 'easy'),
+      'normal':   await DifficultyUnlockStorage.getUnlockProgressText(context, 'normal'),
+      'hard':     await DifficultyUnlockStorage.getUnlockProgressText(context, 'hard'),
     };
   }
 

@@ -85,9 +85,8 @@ class GameStatistics {
 
 class StatisticsStorage {
   static const String _keyBeginnerStats = 'stats_beginner';
-  static const String _keyRookieStats = 'stats_rookie';
   static const String _keyEasyStats = 'stats_easy';
-  static const String _keyMediumStats = 'stats_medium';
+  static const String _keyNormalStats = 'stats_normal';
   static const String _keyHardStats = 'stats_hard';
 
   static Future<void> recordGameStart(String difficulty) async {
@@ -234,12 +233,10 @@ class StatisticsStorage {
     switch (difficulty) {
       case 'beginner':
         return _keyBeginnerStats;
-      case 'rookie':
-        return _keyRookieStats;
       case 'easy':
         return _keyEasyStats;
-      case 'medium':
-        return _keyMediumStats;
+      case 'normal':
+        return _keyNormalStats;
       case 'hard':
         return _keyHardStats;
       default:
