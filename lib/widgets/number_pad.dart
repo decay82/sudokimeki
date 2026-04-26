@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/sudoku_game.dart';
 import '../l10n/app_localizations.dart';
+import 'tutorial_glow.dart';
 
 class NumberPad extends StatelessWidget {
   const NumberPad({super.key});
@@ -41,18 +42,21 @@ class NumberPad extends StatelessWidget {
               children: [
                 // 스마트 입력 버튼
                 Flexible(
-                  child: _buildFunctionButton(
-                    onPressed: game.isTutorialMode && !game.tutorialAllowSmartButton
-                        ? () {}
-                        : game.toggleSmartInputMode,
-                    icon: Icon(
-                      game.isSmartInputMode ? Icons.touch_app : Icons.touch_app_outlined,
-                      size: 13,
+                  child: TutorialSparkleWrapper(
+                    isActive: game.isTutorialMode && game.tutorialAllowSmartButton,
+                    child: _buildFunctionButton(
+                      onPressed: game.isTutorialMode && !game.tutorialAllowSmartButton
+                          ? () {}
+                          : game.toggleSmartInputMode,
+                      icon: Icon(
+                        game.isSmartInputMode ? Icons.touch_app : Icons.touch_app_outlined,
+                        size: 13,
+                      ),
+                      label: game.isSmartInputMode ? l10n.smartOn : l10n.smart,
+                      isActive: game.isSmartInputMode,
+                      activeColor: Colors.purple,
+                      isHighlighted: game.isTutorialMode && game.tutorialAllowSmartButton,
                     ),
-                    label: game.isSmartInputMode ? l10n.smartOn : l10n.smart,
-                    isActive: game.isSmartInputMode,
-                    activeColor: Colors.purple,
-                    isHighlighted: game.isTutorialMode && game.tutorialAllowSmartButton,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -147,12 +151,14 @@ class NumberPad extends StatelessWidget {
 
                     return Padding(
                       padding: EdgeInsets.symmetric(horizontal: spacing / 2),
-                      child: SizedBox(
-                        width: buttonWidth,
-                        height: buttonHeight,
-                        child: Opacity(
-                          opacity: isHidden ? 0.0 : 1.0,
-                          child: ElevatedButton(
+                      child: TutorialSparkleWrapper(
+                        isActive: isTutorialTarget,
+                        child: SizedBox(
+                          width: buttonWidth,
+                          height: buttonHeight,
+                          child: Opacity(
+                            opacity: isHidden ? 0.0 : 1.0,
+                            child: ElevatedButton(
                             onPressed: isHidden || isTutorialBlocked || isTutorialDisabled
                                 ? null
                                 : () {
@@ -194,6 +200,7 @@ class NumberPad extends StatelessWidget {
                           ),
                         ),
                       ),
+                    ),
                     );
                   }),
                 );

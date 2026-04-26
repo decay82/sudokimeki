@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/sudoku_game.dart';
+import 'tutorial_glow.dart';
 
 class SudokuBoard extends StatelessWidget {
   const SudokuBoard({super.key});
@@ -135,7 +136,9 @@ class SudokuBoard extends StatelessWidget {
                                   }
                                 }
                               : null,
-                          child: Container(
+                          child: TutorialSparkleWrapper(
+                            isActive: isTutorialTarget,
+                            child: Container(
                             decoration: BoxDecoration(
                               color: bgColor,
                               border: Border(
@@ -200,6 +203,7 @@ class SudokuBoard extends StatelessWidget {
                               ],
                             ),
                           ),
+                        ),
                         ),
                       );
                     }),

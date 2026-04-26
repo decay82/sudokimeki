@@ -366,66 +366,41 @@ class _TutorialScreenState extends State<TutorialScreen> {
     );
   }
 
-  // 숫자 버튼 위 말풍선 + 지정 버튼 위 화살표
-  // targetButtonIndex: 0-indexed (0=버튼1, 2=버튼3)
+  // 숫자 버튼 위 말풍선
   Widget _buildNumberGuide(String message, {int targetButtonIndex = 0}) {
     return Positioned.fill(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final totalW = constraints.maxWidth;
-          const padH = 8.0;
-          const spacing = 4.0;
-          final rawBtn = (totalW - padH * 2 - spacing * 8) / 9;
-          final btnW = rawBtn > 45 ? 45.0 : rawBtn;
-          // 각 버튼 중앙 x 좌표
-          final btnCenterX = padH + targetButtonIndex * (btnW + spacing) + btnW / 2;
-
-          return IgnorePointer(
-            child: Stack(
-              children: [
-                Positioned(
-                  bottom: 150,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1A1A2E).withValues(alpha: 0.88),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      message,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+      child: IgnorePointer(
+        child: Stack(
+          children: [
+            Positioned(
+              bottom: 150,
+              left: 0,
+              right: 0,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1A2E).withValues(alpha: 0.88),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-                Positioned(
-                  bottom: 68,
-                  left: btnCenterX - 12,
-                  child: const Text(
-                    '↓',
-                    style: TextStyle(
-                      fontSize: 36,
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
 
-  // 셀 위 말풍선 + 화살표 (LayoutBuilder로 셀 위치 계산)
+  // 셀 탭 안내 말풍선
   Widget _buildCellTargetGuide(String message) {
     return Positioned.fill(
       child: LayoutBuilder(
@@ -441,15 +416,13 @@ class _TutorialScreenState extends State<TutorialScreen> {
           final boardTop = headerH + boardOffsetY;
           final cellSize = boardSize / 9;
 
-          // 행 4 위쪽 경계 (화살표 위치)
-          final arrowTop = boardTop + 4 * cellSize - 4;
+          final textTop = boardTop + cellSize * 0.5;
 
           return IgnorePointer(
             child: Stack(
               children: [
-                // 말풍선
                 Positioned(
-                  top: arrowTop - 62,
+                  top: textTop,
                   left: 20,
                   right: 20,
                   child: Container(
@@ -469,21 +442,6 @@ class _TutorialScreenState extends State<TutorialScreen> {
                     ),
                   ),
                 ),
-                // 화살표 (열 4 중앙, 행 4 바로 위)
-                Positioned(
-                  top: arrowTop,
-                  left: 0,
-                  right: 0,
-                  child: const Text(
-                    '↓',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 36,
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
               ],
             ),
           );
@@ -492,114 +450,57 @@ class _TutorialScreenState extends State<TutorialScreen> {
     );
   }
 
-  // 안내 메시지 + 버튼 위 화살표 오버레이
+  // 스마트 버튼 안내 말풍선
   Widget _buildGuideWithArrow(String message) {
-    return Positioned.fill(
+    return Positioned(
+      top: 70,
+      left: 20,
+      right: 20,
       child: IgnorePointer(
-        child: Stack(
-          children: [
-            Positioned(
-              top: 70,
-              left: 20,
-              right: 20,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A2E).withValues(alpha: 0.88),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.5,
-                  ),
-                ),
-              ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A2E).withValues(alpha: 0.88),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              height: 1.5,
             ),
-            const Positioned(
-              bottom: 148,
-              left: 0,
-              right: 0,
-              child: Text(
-                '↓',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 36,
-                  color: Colors.orange,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  // 상단 말풍선 + 보드 특정 셀 위 화살표
+  // 보드 셀 탭 안내 말풍선 (상단 고정)
   Widget _buildCellArrowGuide(String message, int targetRow, int targetCol) {
-    return Positioned.fill(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          const headerH = 42.0;
-          const numPadH = 134.0;
-          const bottomH = 8.0;
-          final totalH = constraints.maxHeight;
-          final totalW = constraints.maxWidth;
-          final boardAreaH = totalH - headerH - numPadH - bottomH;
-          final boardSize = (totalW * 0.95).clamp(0.0, 600.0);
-          final boardOffsetY = ((boardAreaH - boardSize) / 2).clamp(0.0, double.infinity);
-          final boardTop = headerH + boardOffsetY;
-          final boardLeft = (totalW - boardSize) / 2;
-          final cellSize = boardSize / 9;
-
-          final arrowLeft = boardLeft + targetCol * cellSize + cellSize / 2 - 12;
-          final arrowTop = boardTop + targetRow * cellSize - 40;
-
-          return IgnorePointer(
-            child: Stack(
-              children: [
-                Positioned(
-                  top: 70,
-                  left: 20,
-                  right: 20,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1A1A2E).withValues(alpha: 0.88),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      message,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: arrowTop,
-                  left: arrowLeft,
-                  child: const Text(
-                    '↓',
-                    style: TextStyle(
-                      fontSize: 36,
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+    return Positioned(
+      top: 70,
+      left: 20,
+      right: 20,
+      child: IgnorePointer(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A2E).withValues(alpha: 0.88),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
