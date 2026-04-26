@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/sudoku_game.dart';
 import '../utils/tutorial_storage.dart';
+import '../utils/game_storage.dart';
 import 'tutorial_screen.dart';
-import 'welcome_screen.dart';
+import 'sudoku_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   final String selectedDifficulty;
@@ -38,9 +41,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
       );
     } else {
-      // 경험자 → 바로 웰컴 화면으로 (게임 시작)
+      // 경험자 → 선택한 난이도로 바로 게임 시작
+      final game = context.read<SudokuGame>();
+      await GameStorage.clearSavedGame();
+      if (!mounted) return;
+      game.loadStage(0, difficulty: widget.selectedDifficulty);
+      if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+        MaterialPageRoute(builder: (_) => const SudokuScreen()),
       );
     }
   }

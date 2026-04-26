@@ -59,7 +59,7 @@ class NumberPad extends StatelessWidget {
                 // 메모 버튼
                 Flexible(
                   child: _buildFunctionButton(
-                    onPressed: game.toggleMemoMode,
+                    onPressed: game.isTutorialMode ? () {} : game.toggleMemoMode,
                     icon: Icon(
                       game.isMemoMode ? Icons.edit : Icons.edit_outlined,
                       size: 13,
@@ -73,7 +73,7 @@ class NumberPad extends StatelessWidget {
                 // 삭제 버튼
                 Flexible(
                   child: _buildFunctionButton(
-                    onPressed: game.clearCell,
+                    onPressed: game.isTutorialMode ? () {} : game.clearCell,
                     icon: const Icon(Icons.clear, size: 13),
                     label: l10n.delete,
                     isActive: false,
@@ -85,7 +85,7 @@ class NumberPad extends StatelessWidget {
                 // 힌트 버튼
                 Flexible(
                   child: _buildFunctionButton(
-                    onPressed: game.toggleHintMode,
+                    onPressed: game.isTutorialMode ? () {} : game.toggleHintMode,
                     icon: game.hintsAvailable == 0
                         ? const Icon(Icons.play_circle_outline, size: 13)
                         : null,
@@ -128,14 +128,20 @@ class NumberPad extends StatelessWidget {
                   children: List.generate(9, (index) {
                     final number = index + 1;
                     final remaining = _getRemainingCount(game, number);
-                    final isHidden = remaining == 0;
+                    final isTutorialHidden = game.isTutorialMode &&
+                        game.tutorialVisibleNumbers != null &&
+                        !game.tutorialVisibleNumbers!.contains(number);
+                    final isHidden = remaining == 0 || isTutorialHidden;
 
                     final isSelected = game.isSmartInputMode && game.selectedNumber == number;
 
-                    // 튜토리얼: 허용된 숫자만 활성화
+                    // 튜토리얼: 허용된 숫자만 활성화 (dimmed)
                     final isTutorialBlocked = game.isTutorialMode &&
                         game.tutorialAllowedNumber != null &&
                         game.tutorialAllowedNumber != number;
+                    // 튜토리얼: allowedNumber 미설정 시 버튼은 보이지만 비활성
+                    final isTutorialDisabled = game.isTutorialMode &&
+                        game.tutorialAllowedNumber == null;
                     final isTutorialTarget = game.isTutorialMode &&
                         game.tutorialAllowedNumber == number;
 
@@ -145,9 +151,9 @@ class NumberPad extends StatelessWidget {
                         width: buttonWidth,
                         height: buttonHeight,
                         child: Opacity(
-                          opacity: isHidden ? 0.0 : (isTutorialBlocked ? 0.3 : 1.0),
+                          opacity: isHidden ? 0.0 : 1.0,
                           child: ElevatedButton(
-                            onPressed: isHidden || isTutorialBlocked
+                            onPressed: isHidden || isTutorialBlocked || isTutorialDisabled
                                 ? null
                                 : () {
                                     if (game.isSmartInputMode) {

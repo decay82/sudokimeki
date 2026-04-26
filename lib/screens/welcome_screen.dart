@@ -391,131 +391,152 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
  @override
 Widget build(BuildContext context) {
-  final l10n = AppLocalizations.of(context)!;  // ✅ l10n 선언
-  
+  final l10n = AppLocalizations.of(context)!;
+
   return Scaffold(
     body: Stack(
       children: [
-        Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF6B4FFF),
-                Color(0xFF9D7EFF),
-                Color(0xFFD4C5FF),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Stack(
-              children: [
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Spacer(flex: 2),
+        // 기본 흰색 배경
+        Container(color: const Color(0xFFFFFCFC)),
 
-                      const Text(
-                        'Sudoku',
-                        style: TextStyle(
-                          fontSize: 72,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 4,
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Text(  // ✅ const 제거
-                        l10n.sudokuPuzzleGame,  // ✅ '스도쿠 퍼즐 게임' → 번역 키
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.white70,
-                          letterSpacing: 2,
-                        ),
-                      ),
-
-                      const Spacer(flex: 3),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 40),
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              width: double.infinity,
-                              height: 60,
-                              child: ElevatedButton(
-                                onPressed: _showDifficultyDialog,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Theme.of(
-                                    context,
-                                  ).colorScheme.primary,
-                                  elevation: 8,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                ),
-                                child: Text(  // ✅ const 제거
-                                  l10n.newGame,  // ✅ '새로 시작' → 번역 키
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            SizedBox(
-                              width: double.infinity,
-                              height: 60,
-                              child: OutlinedButton(
-                                onPressed: _hasSavedGame
-                                    ? () => _continueGame(context)
-                                    : null,
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  disabledForegroundColor: Colors.white38,
-                                  side: BorderSide(
-                                    color: _hasSavedGame
-                                        ? Colors.white
-                                        : Colors.white38,
-                                    width: 2,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                ),
-                                child: Text(
-                                  _hasSavedGame
-                                      ? l10n.continueGame(_savedGameInfo)  // ✅ '이어서 하기\n...' → 번역 키
-                                      : l10n.noSavedGame,  // ✅ '저장된 게임 없음' → 번역 키
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    height: 1.3,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const Spacer(flex: 2),
-                    ],
-                  ),
-                ),
-              ],
+        // 좌상단 은은한 핑크 빛
+        Positioned(
+          top: -120,
+          left: -100,
+          child: Container(
+            width: 320,
+            height: 320,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [Color(0xFFFFB3B8), Color(0x00FFFFFF)],
+              ),
             ),
           ),
         ),
+
+        // 우측 핑크 빛
+        Positioned(
+          top: 260,
+          right: -140,
+          child: Container(
+            width: 360,
+            height: 360,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [Color(0xFFFFD9DD), Color(0x00FFFFFF)],
+              ),
+            ),
+          ),
+        ),
+
+        // 실제 UI
+        SafeArea(
+          child: Column(
+            children: [
+              const Spacer(flex: 3),
+
+              const Text(
+                'Sudoku',
+                style: TextStyle(
+                  fontSize: 68,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFFFF4B55),
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              Text(
+                l10n.sudokuPuzzleGame,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF777777),
+                ),
+              ),
+
+              const Spacer(flex: 4),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 38),
+                child: Column(
+                  children: [
+                    // 새로 시작 버튼
+                    GestureDetector(
+                      onTap: _showDifficultyDialog,
+                      child: Container(
+                        width: double.infinity,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF4B55),
+                          borderRadius: BorderRadius.circular(32),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFF4B55).withValues(alpha: 0.35),
+                              blurRadius: 18,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          l10n.newGame,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // 이어서 하기 버튼
+                    GestureDetector(
+                      onTap: _hasSavedGame ? () => _continueGame(context) : null,
+                      child: Container(
+                        width: double.infinity,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(32),
+                          border: Border.all(
+                            color: _hasSavedGame
+                                ? const Color(0xFFFF6A73)
+                                : Colors.grey.shade300,
+                            width: 1.5,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          _hasSavedGame
+                              ? l10n.continueGame(_savedGameInfo)
+                              : l10n.noSavedGame,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: _hasSavedGame
+                                ? const Color(0xFFFF4B55)
+                                : Colors.grey,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Spacer(flex: 2),
+            ],
+          ),
+        ),
+
+        // 로딩 오버레이
         if (_isLoading)
           Container(
             color: Colors.black54,

@@ -22,18 +22,24 @@ class SudokuBoard extends StatelessWidget {
         double cellSize = size / 9;
 
         return Center(
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.black, width: 2),
-            ),
-            child: Column(
+          child: Stack(
+            children: [
+              Container(
+                width: size,
+                height: size,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.black, width: 2),
+                ),
+                child: Column(
               children: List.generate(9, (row) {
+                final isHighlightRow = game.isTutorialMode &&
+                    game.tutorialHighlightRow == row;
                 return Expanded(
-                  child: Row(
-                    children: List.generate(9, (col) {
+                  child: Stack(
+                    children: [
+                      Row(
+                        children: List.generate(9, (col) {
                       final isSelected =
                           game.selectedRow == row && game.selectedCol == col;
                       final isInitial = game.isInitialCell(row, col);
@@ -63,8 +69,13 @@ class SudokuBoard extends StatelessWidget {
                           game.tutorialAllowedRow == row &&
                           game.tutorialAllowedCol == col;
 
+                      final isCompletedRow = game.isTutorialMode &&
+                          game.tutorialCompletedRow == row;
+
                       Color bgColor = Colors.white;
-                      if (isTutorialTarget) {
+                      if (isCompletedRow) {
+                        bgColor = Colors.blue.withValues(alpha: 0.18);
+                      } else if (isTutorialTarget) {
                         bgColor = Colors.orange.withValues(alpha: 0.25);
                       } else if (isAnimating) {
                         bgColor = Colors.blue.withOpacity(0.5);
@@ -193,11 +204,55 @@ class SudokuBoard extends StatelessWidget {
                       );
                     }),
                   ),
-                );
+                  if (isHighlightRow)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.red, width: 2.5),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
               }),
             ),
           ),
-        );
+          // 튜토리얼: 열 빨간 박스
+          if (game.isTutorialMode && game.tutorialHighlightCol != null)
+            Positioned(
+              left: game.tutorialHighlightCol! * cellSize,
+              top: 0,
+              width: cellSize,
+              height: size,
+              child: IgnorePointer(
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.red, width: 2.5),
+                  ),
+                ),
+              ),
+            ),
+          // 튜토리얼: 3×3 박스 빨간 테두리
+          for (final box in game.tutorialHighlightBoxes)
+            Positioned(
+              left: (box % 3) * 3 * cellSize,
+              top: (box ~/ 3) * 3 * cellSize,
+              width: cellSize * 3,
+              height: cellSize * 3,
+              child: IgnorePointer(
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.red, width: 2.5),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
       },
     );
   }

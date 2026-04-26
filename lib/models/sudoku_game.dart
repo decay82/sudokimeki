@@ -70,6 +70,11 @@ class SudokuGame extends ChangeNotifier {
   int? tutorialAllowedCol;
   int? tutorialAllowedNumber;
   bool tutorialAllowSmartButton = false;
+  Set<int>? tutorialVisibleNumbers;
+  int? tutorialHighlightRow;
+  int? tutorialHighlightCol;
+  Set<int> tutorialHighlightBoxes = {};
+  int? tutorialCompletedRow;
 
   // ========== 점수 시스템 ==========
   int totalScore = 0;  // 총 점수
@@ -1049,27 +1054,27 @@ void addHeart() {
   // ========== 튜토리얼 전용 메서드 ==========
 
   static const List<List<int>> _tutorialPuzzle = [
-    [5, 8, 7, 2, 3, 4, 9, 1, 6],
-    [3, 6, 2, 8, 7, 9, 4, 0, 5], // (1,7) 빈칸 → 9 입력
-    [4, 1, 9, 6, 8, 3, 7, 2, 1],
-    [9, 7, 5, 3, 2, 8, 1, 3, 4],
-    [1, 2, 3, 4, 0, 6, 7, 8, 9], // (4,4) 빈칸 → 5 입력 (가로줄 데모)
-    [8, 4, 6, 7, 9, 5, 3, 4, 2],
-    [7, 3, 1, 5, 6, 2, 8, 5, 3],
-    [6, 5, 8, 1, 4, 7, 2, 6, 7],
-    [2, 9, 4, 9, 1, 1, 5, 7, 8],
+    [0, 0, 0, 0, 0, 0, 4, 1, 7], // 우측 상단 3×3: col6=4, col7=1, col8=7
+    [0, 0, 0, 0, 0, 0, 5, 0, 8], // (1,7) 빈칸 → 3 입력 (세로줄 데모)
+    [0, 0, 0, 0, 0, 0, 0, 2, 9], // (2,6) 빈칸 → 6 입력 (3×3 데모)
+    [0, 0, 0, 0, 0, 0, 0, 4, 0],
+    [2, 3, 4, 5, 0, 6, 7, 8, 9], // (4,4) 빈칸 → 1 입력 (가로줄 데모)
+    [0, 0, 0, 0, 0, 0, 0, 5, 0],
+    [0, 0, 0, 0, 0, 0, 0, 6, 0],
+    [0, 0, 0, 0, 0, 0, 0, 7, 0],
+    [0, 0, 0, 0, 0, 0, 0, 9, 0],
   ];
 
   static const List<List<int>> _tutorialSolution = [
-    [5, 8, 7, 2, 3, 4, 9, 1, 6],
-    [3, 6, 2, 8, 7, 9, 4, 9, 5], // (1,7) = 9
-    [4, 1, 9, 6, 8, 3, 7, 2, 1],
-    [9, 7, 5, 3, 2, 8, 1, 3, 4],
-    [1, 2, 3, 4, 5, 6, 7, 8, 9], // (4,4) = 5
-    [8, 4, 6, 7, 9, 5, 3, 4, 2],
-    [7, 3, 1, 5, 6, 2, 8, 5, 3],
-    [6, 5, 8, 1, 4, 7, 2, 6, 7],
-    [2, 9, 4, 9, 1, 1, 5, 7, 8],
+    [0, 0, 0, 0, 0, 0, 4, 1, 7],
+    [0, 0, 0, 0, 0, 0, 5, 3, 8], // (1,7) = 3
+    [0, 0, 0, 0, 0, 0, 6, 2, 9], // (2,6) = 6
+    [0, 0, 0, 0, 0, 0, 0, 4, 0],
+    [2, 3, 4, 5, 1, 6, 7, 8, 9], // (4,4) = 1
+    [0, 0, 0, 0, 0, 0, 0, 5, 0],
+    [0, 0, 0, 0, 0, 0, 0, 6, 0],
+    [0, 0, 0, 0, 0, 0, 0, 7, 0],
+    [0, 0, 0, 0, 0, 0, 0, 9, 0],
   ];
 
   void loadTutorialBoard() {
@@ -1102,6 +1107,11 @@ void addHeart() {
     tutorialAllowedCol = null;
     tutorialAllowedNumber = null;
     tutorialAllowSmartButton = false;
+    tutorialVisibleNumbers = null;
+    tutorialHighlightRow = null;
+    tutorialHighlightCol = null;
+    tutorialHighlightBoxes = {};
+    tutorialCompletedRow = null;
 
     notifyListeners();
   }
@@ -1111,11 +1121,31 @@ void addHeart() {
     int? allowedCol,
     int? allowedNumber,
     bool allowSmartButton = false,
+    Set<int>? visibleNumbers,
+    int? highlightRow,
+    int? highlightCol,
+    Set<int>? highlightBoxes,
+    int? completedRow,
+    bool clearSelection = false,
+    bool keepSmartMode = false,
+    bool setSmartMode = false,
   }) {
     tutorialAllowedRow = allowedRow;
     tutorialAllowedCol = allowedCol;
     tutorialAllowedNumber = allowedNumber;
     tutorialAllowSmartButton = allowSmartButton;
+    tutorialVisibleNumbers = visibleNumbers;
+    tutorialHighlightRow = highlightRow;
+    tutorialHighlightCol = highlightCol;
+    tutorialHighlightBoxes = highlightBoxes ?? {};
+    tutorialCompletedRow = completedRow;
+    if (clearSelection) {
+      selectedRow = null;
+      selectedCol = null;
+      selectedNumber = null;
+      if (!keepSmartMode) isSmartInputMode = false;
+    }
+    if (setSmartMode) isSmartInputMode = true;
     notifyListeners();
   }
 
@@ -1125,6 +1155,11 @@ void addHeart() {
     tutorialAllowedCol = null;
     tutorialAllowedNumber = null;
     tutorialAllowSmartButton = false;
+    tutorialVisibleNumbers = null;
+    tutorialHighlightRow = null;
+    tutorialHighlightCol = null;
+    tutorialHighlightBoxes = {};
+    tutorialCompletedRow = null;
     notifyListeners();
   }
 

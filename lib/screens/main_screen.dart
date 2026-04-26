@@ -178,8 +178,8 @@ class _MainScreenState extends State<MainScreen> {
             label: l10n.statistics,
           ),
         ],
-        selectedItemColor: const Color(0xFF6B4FFF),
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: const Color(0xFFFF4B55),
+        unselectedItemColor: const Color(0xFF8A8A8A),
         type: BottomNavigationBarType.fixed,
       ),
     );
