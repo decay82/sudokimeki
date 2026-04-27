@@ -216,5 +216,33 @@
   "noDailyMissionsYet": "No daily missions yet",
   "inProgress": "In Progress",
   "confirm": "Confirm",
-  "gameOverMessage": "Game ends after 3 mistakes."
+  "gameOverMessage": "Game ends after 3 mistakes.",
+
+  "tutorialRowRule": "Row Rule",
+  "tutorialColRule": "Column Rule",
+  "tutorialBoxRule": "3×3 Rule",
+
+  "tutorialStep0Message": "Each row must contain\nthe numbers 1 to 9!",
+  "tutorialStep0Sub": "You can't use a number that's already there.",
+  "tutorialGotIt": "Got it!",
+  "tutorialNext": "Next",
+
+  "tutorialStep4Message": "Well done! 🎉\nRow completed!",
+  "tutorialStep4Sub": "Now let's learn the column rule.",
+
+  "tutorialStep5Message": "Columns follow the same rule!\nEach must contain 1 to 9.",
+  "tutorialStep5Sub": "No duplicate numbers in a column.",
+
+  "tutorialStep9Message": "Each 3×3 block must also\ncontain 1 to 9!",
+  "tutorialStep9Sub": "Numbers inside the red box can't repeat.",
+
+  "tutorialTapSmartButton": "Tap the Smart Input button.\nIt makes the game easier to play.",
+  "tutorialTapNumber": "Tap this number.",
+  "tutorialTapCell": "Select this cell.",
+
+  "tutorialGreat": "Well done!",
+  "tutorialAllNumbers": "Using All Numbers",
+  "tutorialBox3x3": "3×3 Block",
+  "tutorialSolvedMethod": "You've learned how to solve it.",
+  "tutorialStartGame": "Start Game"
 }

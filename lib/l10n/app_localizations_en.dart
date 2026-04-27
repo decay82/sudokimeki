@@ -307,4 +307,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gameOverMessage => 'Game ends after 3 mistakes.';
+
+  @override
+  String get tutorialRowRule => 'Row Rule';
+
+  @override
+  String get tutorialColRule => 'Column Rule';
+
+  @override
+  String get tutorialBoxRule => '3×3 Rule';
+
+  @override
+  String get tutorialStep0Message =>
+      'Each row must contain\nthe numbers 1 to 9!';
+
+  @override
+  String get tutorialStep0Sub =>
+      'You can\'t use a number that\'s already there.';
+
+  @override
+  String get tutorialGotIt => 'Got it!';
+
+  @override
+  String get tutorialNext => 'Next';
+
+  @override
+  String get tutorialStep4Message => 'Well done! 🎉\nRow completed!';
+
+  @override
+  String get tutorialStep4Sub => 'Now let\'s learn the column rule.';
+
+  @override
+  String get tutorialStep5Message =>
+      'Columns follow the same rule!\nEach must contain 1 to 9.';
+
+  @override
+  String get tutorialStep5Sub => 'No duplicate numbers in a column.';
+
+  @override
+  String get tutorialStep9Message =>
+      'Each 3×3 block must also\ncontain 1 to 9!';
+
+  @override
+  String get tutorialStep9Sub => 'Numbers inside the red box can\'t repeat.';
+
+  @override
+  String get tutorialTapSmartButton =>
+      'Tap the Smart Input button.\nIt makes the game easier to play.';
+
+  @override
+  String get tutorialTapNumber => 'Tap this number.';
+
+  @override
+  String get tutorialTapCell => 'Select this cell.';
+
+  @override
+  String get tutorialGreat => 'Well done!';
+
+  @override
+  String get tutorialAllNumbers => 'Using All Numbers';
+
+  @override
+  String get tutorialBox3x3 => '3×3 Block';
+
+  @override
+  String get tutorialSolvedMethod => 'You\'ve learned how to solve it.';
+
+  @override
+  String get tutorialStartGame => 'Start Game';
 }

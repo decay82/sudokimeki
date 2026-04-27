@@ -305,4 +305,68 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get gameOverMessage => '3회 실수하면 게임이 종료됩니다.';
+
+  @override
+  String get tutorialRowRule => '가로줄 규칙';
+
+  @override
+  String get tutorialColRule => '세로줄 규칙';
+
+  @override
+  String get tutorialBoxRule => '3×3 규칙';
+
+  @override
+  String get tutorialStep0Message => '가로줄에는 1~9가\n한 번씩만 들어가야 해요!';
+
+  @override
+  String get tutorialStep0Sub => '이미 있는 숫자는 다시 쓸 수 없어요.';
+
+  @override
+  String get tutorialGotIt => '알겠어요!';
+
+  @override
+  String get tutorialNext => '다음';
+
+  @override
+  String get tutorialStep4Message => '잘했어요! 🎉\n가로줄이 완성됐어요';
+
+  @override
+  String get tutorialStep4Sub => '이번엔 세로줄 규칙을 배워봐요.';
+
+  @override
+  String get tutorialStep5Message => '세로줄도 같은 규칙이에요!\n1~9가 한 번씩만 들어가야 해요.';
+
+  @override
+  String get tutorialStep5Sub => '위아래로 같은 숫자가 있으면 안 돼요.';
+
+  @override
+  String get tutorialStep9Message => '3×3 블록 안에도\n1~9가 한 번씩 들어가야 해요!';
+
+  @override
+  String get tutorialStep9Sub => '빨간 박스 안의 숫자도 겹칠 수 없어요.';
+
+  @override
+  String get tutorialTapSmartButton =>
+      '스마트 입력 버튼을 누르세요.\n더 편리하게 게임을 진행할 수 있습니다.';
+
+  @override
+  String get tutorialTapNumber => '이 숫자를 탭하세요.';
+
+  @override
+  String get tutorialTapCell => '이 셀을 선택하세요.';
+
+  @override
+  String get tutorialGreat => '잘했어요!';
+
+  @override
+  String get tutorialAllNumbers => '모든 숫자 사용하기';
+
+  @override
+  String get tutorialBox3x3 => '3×3 블럭';
+
+  @override
+  String get tutorialSolvedMethod => '풀이 방법을 익혔습니다.';
+
+  @override
+  String get tutorialStartGame => '게임 시작하기';
 }

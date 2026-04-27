@@ -649,6 +649,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Game ends after 3 mistakes.'**
   String get gameOverMessage;
+
+  /// No description provided for @tutorialRowRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Row Rule'**
+  String get tutorialRowRule;
+
+  /// No description provided for @tutorialColRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Column Rule'**
+  String get tutorialColRule;
+
+  /// No description provided for @tutorialBoxRule.
+  ///
+  /// In en, this message translates to:
+  /// **'3×3 Rule'**
+  String get tutorialBoxRule;
+
+  /// No description provided for @tutorialStep0Message.
+  ///
+  /// In en, this message translates to:
+  /// **'Each row must contain\nthe numbers 1 to 9!'**
+  String get tutorialStep0Message;
+
+  /// No description provided for @tutorialStep0Sub.
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t use a number that\'s already there.'**
+  String get tutorialStep0Sub;
+
+  /// No description provided for @tutorialGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it!'**
+  String get tutorialGotIt;
+
+  /// No description provided for @tutorialNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get tutorialNext;
+
+  /// No description provided for @tutorialStep4Message.
+  ///
+  /// In en, this message translates to:
+  /// **'Well done! 🎉\nRow completed!'**
+  String get tutorialStep4Message;
+
+  /// No description provided for @tutorialStep4Sub.
+  ///
+  /// In en, this message translates to:
+  /// **'Now let\'s learn the column rule.'**
+  String get tutorialStep4Sub;
+
+  /// No description provided for @tutorialStep5Message.
+  ///
+  /// In en, this message translates to:
+  /// **'Columns follow the same rule!\nEach must contain 1 to 9.'**
+  String get tutorialStep5Message;
+
+  /// No description provided for @tutorialStep5Sub.
+  ///
+  /// In en, this message translates to:
+  /// **'No duplicate numbers in a column.'**
+  String get tutorialStep5Sub;
+
+  /// No description provided for @tutorialStep9Message.
+  ///
+  /// In en, this message translates to:
+  /// **'Each 3×3 block must also\ncontain 1 to 9!'**
+  String get tutorialStep9Message;
+
+  /// No description provided for @tutorialStep9Sub.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers inside the red box can\'t repeat.'**
+  String get tutorialStep9Sub;
+
+  /// No description provided for @tutorialTapSmartButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the Smart Input button.\nIt makes the game easier to play.'**
+  String get tutorialTapSmartButton;
+
+  /// No description provided for @tutorialTapNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap this number.'**
+  String get tutorialTapNumber;
+
+  /// No description provided for @tutorialTapCell.
+  ///
+  /// In en, this message translates to:
+  /// **'Select this cell.'**
+  String get tutorialTapCell;
+
+  /// No description provided for @tutorialGreat.
+  ///
+  /// In en, this message translates to:
+  /// **'Well done!'**
+  String get tutorialGreat;
+
+  /// No description provided for @tutorialAllNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Using All Numbers'**
+  String get tutorialAllNumbers;
+
+  /// No description provided for @tutorialBox3x3.
+  ///
+  /// In en, this message translates to:
+  /// **'3×3 Block'**
+  String get tutorialBox3x3;
+
+  /// No description provided for @tutorialSolvedMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve learned how to solve it.'**
+  String get tutorialSolvedMethod;
+
+  /// No description provided for @tutorialStartGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Game'**
+  String get tutorialStartGame;
 }
 
 class _AppLocalizationsDelegate

@@ -4,6 +4,7 @@ import '../models/sudoku_game.dart';
 import '../utils/tutorial_storage.dart';
 import '../widgets/sudoku_board.dart';
 import '../widgets/number_pad.dart';
+import '../l10n/app_localizations.dart';
 import 'sudoku_screen.dart';
 
 // 튜토리얼 단계 정의
@@ -161,7 +162,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                 // 실제 게임 UI
                 Column(
                   children: [
-                    _buildHeader(),
+                    _buildHeader(context),
                     const Expanded(flex: 3, child: Center(child: SudokuBoard())),
                     const NumberPad(),
                     const SizedBox(height: 8),
@@ -170,7 +171,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                 // 튜토리얼 오버레이
                 if (!_showCompletion) _buildOverlay(context),
                 // 완료 다이얼로그
-                if (_showCompletion) _buildCompletionDialog(),
+                if (_showCompletion) _buildCompletionDialog(context),
               ],
             ),
           ),
@@ -216,7 +217,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
     });
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       color: Theme.of(context).colorScheme.inversePrimary,
@@ -225,7 +227,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
           const SizedBox(width: 32),
           Expanded(
             child: Text(
-              _step <= 4 ? '가로줄 규칙' : (_step <= 7 ? '세로줄 규칙' : '3×3 규칙'),
+              _step <= 4 ? l10n.tutorialRowRule : (_step <= 7 ? l10n.tutorialColRule : l10n.tutorialBoxRule),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 18,
@@ -240,53 +242,52 @@ class _TutorialScreenState extends State<TutorialScreen> {
   }
 
   Widget _buildOverlay(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (_step) {
       case 0:
         return _buildTooltip(
-          message: '가로줄에는 1~9가\n한 번씩만 들어가야 해요!',
-          sub: '이미 있는 숫자는 다시 쓸 수 없어요.',
-          buttonLabel: '알겠어요!',
+          message: l10n.tutorialStep0Message,
+          sub: l10n.tutorialStep0Sub,
+          buttonLabel: l10n.tutorialGotIt,
           onButton: _nextStep,
         );
       case 1:
-        return _buildGuideWithArrow(
-          '스마트 입력 버튼을 누르세요.\n더 편리하게 게임을 진행할 수 있습니다.',
-        );
+        return _buildGuideWithArrow(l10n.tutorialTapSmartButton);
       case 2:
-        return _buildNumberGuide('이 숫자를 탭하세요.');
+        return _buildNumberGuide(l10n.tutorialTapNumber);
       case 3:
-        return _buildCellTargetGuide('이 셀을 선택하세요.');
+        return _buildCellTargetGuide(l10n.tutorialTapCell);
       case 4:
         return _buildTooltip(
-          message: '잘했어요! 🎉\n가로줄이 완성됐어요',
-          sub: '이번엔 세로줄 규칙을 배워봐요.',
-          buttonLabel: '다음',
+          message: l10n.tutorialStep4Message,
+          sub: l10n.tutorialStep4Sub,
+          buttonLabel: l10n.tutorialNext,
           onButton: _nextStep,
         );
       case 5:
         return _buildTooltip(
-          message: '세로줄도 같은 규칙이에요!\n1~9가 한 번씩만 들어가야 해요.',
-          sub: '위아래로 같은 숫자가 있으면 안 돼요.',
-          buttonLabel: '알겠어요!',
+          message: l10n.tutorialStep5Message,
+          sub: l10n.tutorialStep5Sub,
+          buttonLabel: l10n.tutorialGotIt,
           onButton: _nextStep,
         );
       case 6:
-        return _buildNumberGuide('이 숫자를 탭하세요.', targetButtonIndex: 2);
+        return _buildNumberGuide(l10n.tutorialTapNumber, targetButtonIndex: 2);
       case 7:
-        return _buildCellArrowGuide('이 셀을 선택하세요.', _colTargetRow, _colTargetCol);
-      case 8: // 중간 완료 팝업이 _buildCompletionDialog로 처리됨
+        return _buildCellArrowGuide(l10n.tutorialTapCell, _colTargetRow, _colTargetCol);
+      case 8:
         return const SizedBox.shrink();
       case 9:
         return _buildTooltip(
-          message: '3×3 블록 안에도\n1~9가 한 번씩 들어가야 해요!',
-          sub: '빨간 박스 안의 숫자도 겹칠 수 없어요.',
-          buttonLabel: '알겠어요!',
+          message: l10n.tutorialStep9Message,
+          sub: l10n.tutorialStep9Sub,
+          buttonLabel: l10n.tutorialGotIt,
           onButton: _nextStep,
         );
       case 10:
-        return _buildNumberGuide('이 숫자를 탭하세요.', targetButtonIndex: 5);
+        return _buildNumberGuide(l10n.tutorialTapNumber, targetButtonIndex: 5);
       case 11:
-        return _buildCellArrowGuide('이 셀을 선택하세요.', _boxTargetRow, _boxTargetCol);
+        return _buildCellArrowGuide(l10n.tutorialTapCell, _boxTargetRow, _boxTargetCol);
       default:
         return const SizedBox.shrink();
     }
@@ -505,7 +506,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
     );
   }
 
-  Widget _buildCompletionDialog() {
+  Widget _buildCompletionDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Positioned.fill(
       child: Container(
         color: Colors.black.withValues(alpha: 0.5),
@@ -538,9 +540,9 @@ class _TutorialScreenState extends State<TutorialScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  '잘했어요!',
-                  style: TextStyle(
+                Text(
+                  l10n.tutorialGreat,
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1A1A2E),
@@ -548,7 +550,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _step == 8 ? '모든 숫자 사용하기' : '3×3 블럭',
+                  _step == 8 ? l10n.tutorialAllNumbers : l10n.tutorialBox3x3,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 17,
@@ -557,10 +559,10 @@ class _TutorialScreenState extends State<TutorialScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  '풀이 방법을 익혔습니다.',
+                Text(
+                  l10n.tutorialSolvedMethod,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 15,
                     color: Color(0xFF555555),
                     height: 1.5,
@@ -581,7 +583,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                       elevation: 0,
                     ),
                     child: Text(
-                      _step == 8 ? '다음' : '게임 시작하기',
+                      _step == 8 ? l10n.tutorialNext : l10n.tutorialStartGame,
                       style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,

@@ -102,5 +102,33 @@
   "noDailyMissionsYet": "아직 일일 미션이 없습니다",
   "inProgress": "진행 중",
   "confirm": "확인",
-  "gameOverMessage": "3회 실수하면 게임이 종료됩니다."
+  "gameOverMessage": "3회 실수하면 게임이 종료됩니다.",
+
+  "tutorialRowRule": "가로줄 규칙",
+  "tutorialColRule": "세로줄 규칙",
+  "tutorialBoxRule": "3×3 규칙",
+
+  "tutorialStep0Message": "가로줄에는 1~9가\n한 번씩만 들어가야 해요!",
+  "tutorialStep0Sub": "이미 있는 숫자는 다시 쓸 수 없어요.",
+  "tutorialGotIt": "알겠어요!",
+  "tutorialNext": "다음",
+
+  "tutorialStep4Message": "잘했어요! 🎉\n가로줄이 완성됐어요",
+  "tutorialStep4Sub": "이번엔 세로줄 규칙을 배워봐요.",
+
+  "tutorialStep5Message": "세로줄도 같은 규칙이에요!\n1~9가 한 번씩만 들어가야 해요.",
+  "tutorialStep5Sub": "위아래로 같은 숫자가 있으면 안 돼요.",
+
+  "tutorialStep9Message": "3×3 블록 안에도\n1~9가 한 번씩 들어가야 해요!",
+  "tutorialStep9Sub": "빨간 박스 안의 숫자도 겹칠 수 없어요.",
+
+  "tutorialTapSmartButton": "스마트 입력 버튼을 누르세요.\n더 편리하게 게임을 진행할 수 있습니다.",
+  "tutorialTapNumber": "이 숫자를 탭하세요.",
+  "tutorialTapCell": "이 셀을 선택하세요.",
+
+  "tutorialGreat": "잘했어요!",
+  "tutorialAllNumbers": "모든 숫자 사용하기",
+  "tutorialBox3x3": "3×3 블럭",
+  "tutorialSolvedMethod": "풀이 방법을 익혔습니다.",
+  "tutorialStartGame": "게임 시작하기"
 }
