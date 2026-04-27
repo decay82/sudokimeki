@@ -31,7 +31,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   void initState() {
     super.initState();
     _checkSavedGame();
-    AdHelper.preloadInterstitialAd();
+    AdHelper.preloadRewardedAd();
     _checkForUpdate();
   }
 
@@ -246,32 +246,32 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 // 플레이 횟수 증가
                 await PlayCounter.incrementPlayCount();
 
-                // 3회 이상일 때만 광고 표시
+                // 5회 이상일 때만 광고 표시
                 bool shouldShowAd = await PlayCounter.shouldShowAd();
 
                 if (shouldShowAd) {
-                  InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
+                  RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
 
                   if (ad != null) {
                     ad.fullScreenContentCallback = FullScreenContentCallback(
                       onAdFailedToShowFullScreenContent: (ad, error) {
-                        print('!!! 전면 광고 표시 실패: ${error.message}');
+                        print('!!! 리워드 광고 표시 실패: ${error.message}');
                         ad.dispose();
                         _startGameWithDifficulty(difficulty);
                       },
                       onAdDismissedFullScreenContent: (ad) {
-                        print('전면 광고 닫힘');
+                        print('리워드 광고 닫힘');
                         ad.dispose();
                         _startGameWithDifficulty(difficulty);
                       },
                     );
-                    ad.show();
+                    ad.show(onUserEarnedReward: (ad, reward) {});
                   } else {
-                    print('!!! 전면 광고 로드 실패. 바로 게임을 시작합니다.');
+                    print('!!! 리워드 광고 로드 실패. 바로 게임을 시작합니다.');
                     _startGameWithDifficulty(difficulty);
                   }
                 } else {
-                  print('플레이 횟수 3회 미만, 광고 스킵');
+                  print('플레이 횟수 5회 미만, 광고 스킵');
                   _startGameWithDifficulty(difficulty);
                 }
               }
@@ -338,16 +338,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       // 플레이 횟수 증가
       await PlayCounter.incrementPlayCount();
 
-      // 3회 이상일 때만 광고 표시
+      // 5회 이상일 때만 광고 표시
       bool shouldShowAd = await PlayCounter.shouldShowAd();
 
       if (shouldShowAd) {
-        InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
+        RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
 
         if (ad != null) {
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdFailedToShowFullScreenContent: (ad, error) {
-              print('!!! 전면 광고 표시 실패: ${error.message}');
+              print('!!! 리워드 광고 표시 실패: ${error.message}');
               ad.dispose();
               if (mounted) {
                 setState(() => _isLoading = true);
@@ -357,7 +357,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               }
             },
             onAdDismissedFullScreenContent: (ad) {
-              print('전면 광고 닫힘');
+              print('리워드 광고 닫힘');
               ad.dispose();
               if (mounted) {
                 setState(() => _isLoading = true);
@@ -367,16 +367,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               }
             },
           );
-          ad.show();
+          ad.show(onUserEarnedReward: (ad, reward) {});
         } else {
-          print('!!! 전면 광고 로드 실패. 바로 게임 화면으로 이동합니다.');
+          print('!!! 리워드 광고 로드 실패. 바로 게임 화면으로 이동합니다.');
           setState(() => _isLoading = true);
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const SudokuScreen()),
           );
         }
       } else {
-        print('플레이 횟수 3회 미만, 광고 스킵');
+        print('플레이 횟수 5회 미만, 광고 스킵');
         setState(() => _isLoading = true);
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const SudokuScreen()),

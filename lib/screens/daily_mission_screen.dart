@@ -5,7 +5,9 @@ import '../utils/difficulty_unlock_storage.dart';
 import '../utils/localization_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../data/puzzle_data.dart';
+import 'dart:async';
 import 'dart:math';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'sudoku_screen.dart';
 import 'collection_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -270,11 +272,23 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
         selectedDateTime.month == now.month &&
         selectedDateTime.day == now.day;
 
-    // 과거 일자면 광고 먼저 표시
+    // 과거 일자면 리워드 광고 먼저 표시
     if (!isToday) {
-      final interstitialAd = AdHelper.getPreloadedInterstitialAd();
-      if (interstitialAd != null) {
-        await interstitialAd.show();
+      final rewardedAd = AdHelper.getPreloadedRewardedAd();
+      if (rewardedAd != null) {
+        final completer = Completer<void>();
+        rewardedAd.fullScreenContentCallback = FullScreenContentCallback(
+          onAdDismissedFullScreenContent: (ad) {
+            ad.dispose();
+            completer.complete();
+          },
+          onAdFailedToShowFullScreenContent: (ad, error) {
+            ad.dispose();
+            completer.complete();
+          },
+        );
+        rewardedAd.show(onUserEarnedReward: (ad, reward) {});
+        await completer.future;
       }
     }
 

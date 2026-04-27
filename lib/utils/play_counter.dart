@@ -17,9 +17,9 @@ class PlayCounter {
     print('>>> 플레이 횟수: ${currentCount + 1}');
   }
 
-  // 3회 이상인지 확인
+  // 5회 이상인지 확인
   static Future<bool> shouldShowAd() async {
     final count = await getPlayCount();
-    return count >= 3;
+    return count >= 5;
   }
 }

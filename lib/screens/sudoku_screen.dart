@@ -290,38 +290,38 @@ class _SudokuScreenState extends State<SudokuScreen> {
                       // 플레이 횟수 증가
                       await PlayCounter.incrementPlayCount();
 
-                      // 3회 이상일 때만 광고 표시
+                      // 5회 이상일 때만 광고 표시
                       bool shouldShowAd = await PlayCounter.shouldShowAd();
 
                       if (shouldShowAd) {
-                        InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
+                        RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
 
                         if (ad != null) {
                           ad.fullScreenContentCallback = FullScreenContentCallback(
                             onAdFailedToShowFullScreenContent: (ad, error) {
-                              print('!!! 전면 광고 표시 실패: ${error.message}');
+                              print('!!! 리워드 광고 표시 실패: ${error.message}');
                               ad.dispose();
                               game.resumeTimer();
                               game.restartStage();
                               setState(() => _isLoading = false);
                             },
                             onAdDismissedFullScreenContent: (ad) {
-                              print('전면 광고 닫힘');
+                              print('리워드 광고 닫힘');
                               ad.dispose();
                               game.resumeTimer();
                               game.restartStage();
                               setState(() => _isLoading = false);
                             },
                           );
-                          ad.show();
+                          ad.show(onUserEarnedReward: (ad, reward) {});
                         } else {
-                          print('!!! 전면 광고 로드 실패. 바로 다시 시작합니다.');
+                          print('!!! 리워드 광고 로드 실패. 바로 다시 시작합니다.');
                           game.resumeTimer();
                           game.restartStage();
                           setState(() => _isLoading = false);
                         }
                       } else {
-                        print('플레이 횟수 3회 미만, 광고 스킵');
+                        print('플레이 횟수 5회 미만, 광고 스킵');
                         game.resumeTimer();
                         game.restartStage();
                         setState(() => _isLoading = false);
@@ -833,35 +833,35 @@ class _SudokuScreenState extends State<SudokuScreen> {
           // 플레이 횟수 증가
           await PlayCounter.incrementPlayCount();
 
-          // 3회 이상일 때만 광고 표시
+          // 5회 이상일 때만 광고 표시
           bool shouldShowAd = await PlayCounter.shouldShowAd();
 
           if (shouldShowAd) {
-            InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
+            RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
 
             if (ad != null) {
               ad.fullScreenContentCallback = FullScreenContentCallback(
                 onAdFailedToShowFullScreenContent: (ad, error) {
-                  print('!!! 전면 광고 표시 실패: ${error.message}');
+                  print('!!! 리워드 광고 표시 실패: ${error.message}');
                   ad.dispose();
                   game.loadStage(nextStage, difficulty: difficulty);
                   setState(() => _isLoading = false);
                 },
                 onAdDismissedFullScreenContent: (ad) {
-                  print('전면 광고 닫힘');
+                  print('리워드 광고 닫힘');
                   ad.dispose();
                   game.loadStage(nextStage, difficulty: difficulty);
                   setState(() => _isLoading = false);
                 },
               );
-              ad.show();
+              ad.show(onUserEarnedReward: (ad, reward) {});
             } else {
-              print('!!! 전면 광고 로드 실패. 바로 다음 스테이지로 이동합니다.');
+              print('!!! 리워드 광고 로드 실패. 바로 다음 스테이지로 이동합니다.');
               game.loadStage(nextStage, difficulty: difficulty);
               setState(() => _isLoading = false);
             }
           } else {
-            print('플레이 횟수 3회 미만, 광고 스킵');
+            print('플레이 횟수 5회 미만, 광고 스킵');
             game.loadStage(nextStage, difficulty: difficulty);
             setState(() => _isLoading = false);
           }
@@ -939,38 +939,38 @@ class _SudokuScreenState extends State<SudokuScreen> {
           // 플레이 횟수 증가
           await PlayCounter.incrementPlayCount();
 
-          // 3회 이상일 때만 광고 표시
+          // 5회 이상일 때만 광고 표시
           bool shouldShowAd = await PlayCounter.shouldShowAd();
 
           if (shouldShowAd) {
-            InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
+            RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
 
             if (ad != null) {
               ad.fullScreenContentCallback = FullScreenContentCallback(
                 onAdFailedToShowFullScreenContent: (ad, error) {
-                  print('!!! 전면 광고 표시 실패: ${error.message}');
+                  print('!!! 리워드 광고 표시 실패: ${error.message}');
                   ad.dispose();
                   game.resumeTimer();
                   game.loadStage(nextStage, difficulty: difficulty);
                   setState(() => _isLoading = false);
                 },
                 onAdDismissedFullScreenContent: (ad) {
-                  print('전면 광고 닫힘');
+                  print('리워드 광고 닫힘');
                   ad.dispose();
                   game.resumeTimer();
                   game.loadStage(nextStage, difficulty: difficulty);
                   setState(() => _isLoading = false);
                 },
               );
-              ad.show();
+              ad.show(onUserEarnedReward: (ad, reward) {});
             } else {
-              print('!!! 전면 광고 로드 실패. 바로 새 게임을 시작합니다.');
+              print('!!! 리워드 광고 로드 실패. 바로 새 게임을 시작합니다.');
               game.resumeTimer();
               game.loadStage(nextStage, difficulty: difficulty);
               setState(() => _isLoading = false);
             }
           } else {
-            print('플레이 횟수 3회 미만, 광고 스킵');
+            print('플레이 횟수 5회 미만, 광고 스킵');
             game.resumeTimer();
             game.loadStage(nextStage, difficulty: difficulty);
             setState(() => _isLoading = false);
