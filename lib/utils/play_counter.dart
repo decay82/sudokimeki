@@ -3,6 +3,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 class PlayCounter {
   static const String _playCountKey = 'play_count';
 
+  // 앱 구동 후 첫 번째 전면 광고 노출 여부 (메모리, 재시작 시 초기화)
+  static bool _hasShownFirstAd = false;
+
+  static bool get hasShownFirstAd => _hasShownFirstAd;
+  static void markFirstAdShown() => _hasShownFirstAd = true;
+
   // 플레이 횟수 가져오기
   static Future<int> getPlayCount() async {
     final prefs = await SharedPreferences.getInstance();
