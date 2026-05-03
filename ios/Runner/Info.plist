@@ -49,6 +49,8 @@
 	<string>ca-app-pub-3940256099942544~1458002511</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>맞춤형 광고를 제공하기 위해 사용됩니다.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>데일리 미션 알림을 보내기 위해 사용됩니다.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>SKAdNetworkItems</key>

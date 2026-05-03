@@ -5,6 +5,7 @@ import 'ranking_screen.dart';
 import 'statistics_screen.dart';
 import '../utils/ranking_badge_helper.dart';
 import '../utils/daily_mission_badge_helper.dart';
+
 import '../l10n/app_localizations.dart';
 
 class MainScreen extends StatefulWidget {
@@ -113,6 +114,7 @@ class _MainScreenState extends State<MainScreen> {
           const StatisticsScreen(showAppBar: false),
         ],
       ),
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,

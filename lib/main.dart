@@ -10,6 +10,7 @@ import 'l10n/app_localizations.dart';
 import 'models/sudoku_game.dart';
 import 'screens/main_screen.dart';
 import 'utils/analytics_helper.dart';
+import 'utils/notification_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,17 @@ void main() async {
 
     // 앱 오픈 이벤트 로깅
     await AnalyticsHelper.logAppOpen();
+
+    // 로컬 푸시 알림 초기화 및 권한 요청
+    try {
+      await NotificationHelper.initialize().timeout(const Duration(seconds: 5));
+      final granted = await NotificationHelper.requestPermission();
+      if (granted) {
+        await NotificationHelper.scheduleDailyMissionNotification();
+      }
+    } catch (e) {
+      debugPrint('>>> 알림 초기화 실패: $e');
+    }
   }
 
   runApp(
