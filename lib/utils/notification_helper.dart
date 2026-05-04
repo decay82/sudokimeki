@@ -8,7 +8,8 @@ class NotificationHelper {
   static final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
-  static const int _dailyMissionId = 1001;
+  static const int _noonMissionId = 1001;
+  static const int _nightMissionId = 1002;
   static bool _initialized = false;
 
   static const _androidDetails = AndroidNotificationDetails(
@@ -23,7 +24,8 @@ class NotificationHelper {
     if (kIsWeb) return;
 
     // 플러그인 초기화 (반드시 완료)
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -70,17 +72,33 @@ class NotificationHelper {
     return false;
   }
 
-  // 매일 지정 시각에 데일리 미션 알림 예약
-  static Future<void> scheduleDailyMissionNotification({
-    int hour = 7,
-    int minute = 45,
-  }) async {
+  // 매일 두 번 알림 예약
+  static Future<void> scheduleAllNotifications() async {
     if (kIsWeb || !_initialized) return;
+    await _scheduleNotification(
+      id: _noonMissionId,
+      hour: 12,
+      minute: 40,
+      body: '10년 젊어지는 1분 뇌활동 지금 도전해보세요.',
+    );
+    await _scheduleNotification(
+      id: _nightMissionId,
+      hour: 20,
+      minute: 10,
+      body: '자기 전 딱 1분, 오늘 미션을 완료 하세요🌙',
+    );
+  }
 
+  static Future<void> _scheduleNotification({
+    required int id,
+    required int hour,
+    required int minute,
+    required String body,
+  }) async {
     await _plugin.zonedSchedule(
-      _dailyMissionId,
+      id,
       '스도키메키',
-      '10년 젊어지는 1분 뇌활동 지금 도전해보세요.',
+      body,
       _nextInstanceOfTime(hour, minute),
       const NotificationDetails(
         android: _androidDetails,
@@ -106,11 +124,6 @@ class NotificationHelper {
         iOS: DarwinNotificationDetails(),
       ),
     );
-  }
-
-  static Future<void> cancelDailyMissionNotification() async {
-    if (kIsWeb || !_initialized) return;
-    await _plugin.cancel(_dailyMissionId);
   }
 
   static Future<void> cancelAll() async {

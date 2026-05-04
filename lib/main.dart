@@ -33,7 +33,7 @@ void main() async {
       await NotificationHelper.initialize().timeout(const Duration(seconds: 5));
       final granted = await NotificationHelper.requestPermission();
       if (granted) {
-        await NotificationHelper.scheduleDailyMissionNotification();
+        await NotificationHelper.scheduleAllNotifications();
       }
     } catch (e) {
       debugPrint('>>> 알림 초기화 실패: $e');
