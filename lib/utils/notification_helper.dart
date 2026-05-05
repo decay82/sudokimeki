@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -75,17 +76,27 @@ class NotificationHelper {
   // 매일 두 번 알림 예약
   static Future<void> scheduleAllNotifications() async {
     if (kIsWeb || !_initialized) return;
+
+    final isKorean =
+        PlatformDispatcher.instance.locale.languageCode == 'ko';
+
     await _scheduleNotification(
       id: _noonMissionId,
       hour: 12,
       minute: 40,
-      body: '10년 젊어지는 1분 뇌활동 지금 도전해보세요.',
+      title: isKorean ? '스도키메키' : 'Sudokimeki',
+      body: isKorean
+          ? '10년 젊어지는 1분 뇌활동 지금 도전해보세요.'
+          : 'Sharpen your brain in 1 minute. Try today\'s mission!',
     );
     await _scheduleNotification(
       id: _nightMissionId,
       hour: 20,
       minute: 10,
-      body: '자기 전 딱 1분, 오늘 미션을 완료 하세요🌙',
+      title: isKorean ? '스도키메키' : 'Sudokimeki',
+      body: isKorean
+          ? '자기 전 딱 1분, 오늘 미션을 완료 하세요🌙'
+          : 'Just 1 minute before bed. Complete today\'s mission 🌙',
     );
   }
 
@@ -93,11 +104,12 @@ class NotificationHelper {
     required int id,
     required int hour,
     required int minute,
+    required String title,
     required String body,
   }) async {
     await _plugin.zonedSchedule(
       id,
-      '스도키메키',
+      title,
       body,
       _nextInstanceOfTime(hour, minute),
       const NotificationDetails(
