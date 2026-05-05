@@ -272,24 +272,26 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     _startGameWithDifficulty(difficulty);
                   }
                 } else if (shouldShowAd) {
-                  // 이후 → 리워드 광고
-                  RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
+                  // 이후 → 전면 광고
+                  InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
                   if (ad != null) {
                     ad.fullScreenContentCallback = FullScreenContentCallback(
                       onAdFailedToShowFullScreenContent: (ad, error) {
-                        print('!!! 리워드 광고 표시 실패: ${error.message}');
+                        print('!!! 전면 광고 표시 실패: ${error.message}');
                         ad.dispose();
+                        AdHelper.preloadInterstitialAd();
                         _startGameWithDifficulty(difficulty);
                       },
                       onAdDismissedFullScreenContent: (ad) {
-                        print('리워드 광고 닫힘');
+                        print('전면 광고 닫힘');
                         ad.dispose();
+                        AdHelper.preloadInterstitialAd();
                         _startGameWithDifficulty(difficulty);
                       },
                     );
-                    ad.show(onUserEarnedReward: (ad, reward) {});
+                    ad.show();
                   } else {
-                    print('!!! 리워드 광고 로드 실패. 바로 게임을 시작합니다.');
+                    print('!!! 전면 광고 로드 실패. 바로 게임을 시작합니다.');
                     _startGameWithDifficulty(difficulty);
                   }
                 } else {
@@ -394,24 +396,26 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           navigateToGame();
         }
       } else if (shouldShowAd) {
-        // 이후 → 리워드 광고
-        RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
+        // 이후 → 전면 광고
+        InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
         if (ad != null) {
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdFailedToShowFullScreenContent: (ad, error) {
-              print('!!! 리워드 광고 표시 실패: ${error.message}');
+              print('!!! 전면 광고 표시 실패: ${error.message}');
               ad.dispose();
+              AdHelper.preloadInterstitialAd();
               navigateToGame();
             },
             onAdDismissedFullScreenContent: (ad) {
-              print('리워드 광고 닫힘');
+              print('전면 광고 닫힘');
               ad.dispose();
+              AdHelper.preloadInterstitialAd();
               navigateToGame();
             },
           );
-          ad.show(onUserEarnedReward: (ad, reward) {});
+          ad.show();
         } else {
-          print('!!! 리워드 광고 로드 실패. 바로 게임 화면으로 이동합니다.');
+          print('!!! 전면 광고 로드 실패. 바로 게임 화면으로 이동합니다.');
           navigateToGame();
         }
       } else {
