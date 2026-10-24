@@ -113,74 +113,108 @@ class _MainScreenState extends State<MainScreen> {
           const StatisticsScreen(showAppBar: false),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home),
-            label: l10n.home,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
           ),
-          BottomNavigationBarItem(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(Icons.calendar_today),
-                if (_showDailyMissionBadge)
-                  Positioned(
-                    right: -6,
-                    top: -6,
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 1.5,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: _onTabTapped,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            items: [
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.home_rounded, size: 28),
+                label: l10n.home,
+              ),
+              BottomNavigationBarItem(
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.calendar_today_rounded, size: 26),
+                    if (_showDailyMissionBadge)
+                      Positioned(
+                        right: -6,
+                        top: -6,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF4757),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 2,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-              ],
-            ),
-            label: l10n.dailyMission,
-          ),
-          BottomNavigationBarItem(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(Icons.emoji_events),
-                if (_showRankingBadge)
-                  Positioned(
-                    right: -6,
-                    top: -6,
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 1.5,
+                  ],
+                ),
+                label: l10n.dailyMission,
+              ),
+              BottomNavigationBarItem(
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.emoji_events_rounded, size: 28),
+                    if (_showRankingBadge)
+                      Positioned(
+                        right: -6,
+                        top: -6,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF4757),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 2,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-              ],
+                  ],
+                ),
+                label: l10n.ranking,
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.bar_chart_rounded, size: 28),
+                label: l10n.statistics,
+              ),
+            ],
+            selectedItemColor: const Color(0xFFE91E63),
+            unselectedItemColor: const Color(0xFF8B7580),
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
             ),
-            label: l10n.ranking,
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 11,
+            ),
+            type: BottomNavigationBarType.fixed,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.bar_chart),
-            label: l10n.statistics,
-          ),
-        ],
-        selectedItemColor: const Color(0xFF6B4FFF),
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
+        ),
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/daily_mission_storage.dart';
-import '../utils/ad_helper.dart';
+
 import '../utils/difficulty_unlock_storage.dart';
 import '../utils/localization_helper.dart';
 import '../l10n/app_localizations.dart';
@@ -223,18 +223,18 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
       case DayStatus.available:
         return Colors.transparent;
       case DayStatus.inProgress:
-        return Colors.purple;
+        return const Color(0xFFFF9800); // 오렌지
       case DayStatus.completed:
-        return Colors.blue;
+        return const Color(0xFFFF6B9D); // 핑크
     }
   }
 
   Color _getTextColor(DayStatus status) {
     switch (status) {
       case DayStatus.locked:
-        return const Color(0xFFD4D5DA);
+        return const Color(0xFFFFD1DC); // 연한 핑크
       case DayStatus.available:
-        return const Color(0xFF25292E);
+        return const Color(0xFF4A3540); // 진한 핑크계열 텍스트
       case DayStatus.inProgress:
         return Colors.white;
       case DayStatus.completed:
@@ -270,13 +270,7 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
         selectedDateTime.month == now.month &&
         selectedDateTime.day == now.day;
 
-    // 과거 일자면 광고 먼저 표시
-    if (!isToday) {
-      final interstitialAd = AdHelper.getPreloadedInterstitialAd();
-      if (interstitialAd != null) {
-        await interstitialAd.show();
-      }
-    }
+
 
     // 진행중인 미션이 있으면 이어하기
     if (mission != null && mission.status == DayStatus.inProgress) {
@@ -503,9 +497,13 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFFFF9FA), // 크림색 배경
       appBar: widget.showAppBar
           ? AppBar(
               title: Text(l10n.dailyMission),
+              backgroundColor: const Color(0xFFFFE4EC),
+              foregroundColor: const Color(0xFFE91E63),
+              elevation: 0,
               actions: [
                 IconButton(
                   icon: const Icon(Icons.emoji_events),
@@ -521,47 +519,66 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
             )
           : null,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SafeArea(
-              child: Column(
-                children: [
-                  // 상단 타이틀 및 콜렉션 버튼
-                  Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        l10n.dailyMission,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6B9D)),
+              ),
+            )
+          : Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFFFFE4EC),
+                    Color(0xFFFFF9FA),
+                    Color(0xFFFFFFFF),
+                  ],
+                ),
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // 상단 타이틀 및 콜렉션 버튼
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // 디버그 버튼 (테스트용)
-                          // IconButton(
-                          //   icon: const Icon(Icons.bug_report, size: 20, color: Colors.grey),
-                          //   onPressed: _fillCurrentMonthForTest,
-                          //   tooltip: '테스트: 현재 월 전체 완료',
-                          // ),
-                          IconButton(
-                            icon: const Icon(Icons.emoji_events, size: 28),
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const CollectionScreen(),
+                          Row(
+                            children: [
+                              const Text('📅', style: TextStyle(fontSize: 28)),
+                              const SizedBox(width: 8),
+                              Text(
+                                l10n.dailyMission,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFFE91E63),
                                 ),
-                              ).then((_) => _loadMissions());
-                            },
+                              ),
+                            ],
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF6B9D).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.emoji_events_rounded, size: 28),
+                              color: const Color(0xFFFF9800),
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const CollectionScreen(),
+                                  ),
+                                ).then((_) => _loadMissions());
+                              },
+                            ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
                 // 트로피 표시 영역
                 Builder(
                   builder: (context) {
@@ -625,15 +642,16 @@ class _DailyMissionScreenState extends State<DailyMissionScreen> {
                     );
                   },
                 ),
-                // 달력
-                Expanded(
-                  child: _buildCalendar(),
+                    // 달력
+                    Expanded(
+                      child: _buildCalendar(),
+                    ),
+                    // 플레이 버튼
+                    if (_selectedDate != null) _buildPlayButton(),
+                  ],
                 ),
-                // 플레이 버튼
-                if (_selectedDate != null) _buildPlayButton(),
-              ],
+              ),
             ),
-          ),
     );
   }
 

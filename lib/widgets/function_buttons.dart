@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/sudoku_game.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/ad_helper.dart';
 
 class FunctionButtons extends StatelessWidget {
-  const FunctionButtons({super.key});
+  final GlobalKey? smartInputButtonKey;
+
+  const FunctionButtons({super.key, this.smartInputButtonKey});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +20,8 @@ class FunctionButtons extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Flexible(
-            child: SizedBox(
+            child: Container(
+              key: smartInputButtonKey,
               width: 80,
               height: 36,
               child: ElevatedButton.icon(
@@ -89,7 +93,23 @@ class FunctionButtons extends StatelessWidget {
               width: 80,
               height: 36,
               child: ElevatedButton(
-                onPressed: game.toggleHintMode,
+                onPressed: () async {
+                  // 힌트가 없으면 보상형 광고 시청으로 힌트 획득
+                  if (!game.isHintMode && game.hintsAvailable <= 0) {
+                    await AdHelper.showRewardedAd(
+                      onRewarded: () {
+                        // 광고 시청 완료 - 힌트 1개 지급하고 힌트 모드 활성화
+                        game.addHintFromAd();
+                      },
+                      onAdFailed: () {
+                        // 광고 실패 시 아무 동작 안함
+                      },
+                    );
+                  } else {
+                    // 힌트가 있으면 일반 토글
+                    game.toggleHintMode();
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
                       game.isHintMode ? Colors.amber : Colors.grey,

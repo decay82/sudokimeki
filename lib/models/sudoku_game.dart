@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../data/puzzle_data.dart';
 import '../utils/ad_helper.dart';
@@ -53,8 +53,7 @@ class SudokuGame extends ChangeNotifier {
   int hintsUsed = 0;
   int hintsAvailable = 1; // 보유 힌트 개수
 
-  BannerAd? bannerAd;
-  bool isBannerAdLoaded = false;
+
 
   Function()? onCompletionCallback;
   Function()? onGameOverCallback;
@@ -83,10 +82,6 @@ class SudokuGame extends ChangeNotifier {
 
   SudokuGame() {
     loadStage(0, recordStart: false);
-
-    if (!kIsWeb) {
-      _loadBannerAd();
-    }
   }
 
 void addHeart() {
@@ -103,7 +98,15 @@ void addHeart() {
   });
 }
 
-  
+  /// 보상형 광고 시청 후 힌트 1개 지급
+  void addHintFromAd() {
+    hintsAvailable++;
+    isHintMode = true;
+    print("광고 시청으로 힌트 획득: $hintsAvailable개");
+    notifyListeners();
+  }
+
+
 
   // 완료 체크 결과를 담는 클래스
   ({int bonusScore, int completedLinesCount}) _checkCompletions(int row, int col) {
@@ -295,23 +298,7 @@ void addHeart() {
     return false;
   }
 
-  void _loadBannerAd() {
-    bannerAd = BannerAd(
-      adUnitId: AdHelper.bannerAdUnitId,
-      size: AdSize.banner,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          isBannerAdLoaded = true;
-          notifyListeners();
-        },
-        onAdFailedToLoad: (ad, error) {
-          ad.dispose();
-          isBannerAdLoaded = false;
-        },
-      ),
-    )..load();
-  }
+
 
   void toggleHintMode() {
     print('========== toggleHintMode 호출됨 ==========');
@@ -323,34 +310,8 @@ void addHeart() {
         isHintMode = true;
         notifyListeners();
       } else {
-        // 힌트가 없으면 광고 시청
-        print('힌트 없음. 광고 시청 필요');
-        RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
-
-        if (ad != null) {
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdFailedToShowFullScreenContent: (ad, error) {
-              print('!!! 힌트 광고 표시 실패: ${error.message}');
-              ad.dispose();
-            },
-            onAdDismissedFullScreenContent: (ad) {
-              print('힌트 광고 닫힘');
-              ad.dispose();
-            },
-          );
-
-          ad.show(
-            onUserEarnedReward: (ad, reward) {
-              print('힌트 광고 보상 획득!');
-              isHintMode = true;
-              notifyListeners();
-            },
-          );
-        } else {
-          print('!!! 힌트 광고 로드 실패. 힌트 모드를 바로 활성화합니다.');
-          isHintMode = true;
-          notifyListeners();
-        }
+        // 힌트가 없으면 광고 시청 (토스 앱 입점으로 인해 광고 비활성화 - 힌트 제공 불가)
+        // print('힌트 없음. 광고 시청 필요');
       }
     } else {
       isHintMode = false;
@@ -1078,7 +1039,6 @@ void addHeart() {
 
   @override
   void dispose() {
-    bannerAd?.dispose();
     super.dispose();
   }
 }

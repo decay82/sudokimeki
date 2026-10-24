@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'dart:math';
 import 'package:confetti/confetti.dart';
 
@@ -9,8 +10,11 @@ import '../utils/ad_helper.dart';
 import '../utils/play_counter.dart';
 import '../utils/sound_helper.dart';
 import '../utils/difficulty_unlock_storage.dart';
+import '../utils/toss_leaderboard_helper.dart';
+import '../utils/tutorial_storage.dart';
 import '../widgets/sudoku_board.dart';
 import '../widgets/number_pad.dart';
+import '../widgets/tutorial_overlay.dart';
 import '../data/puzzle_data.dart';
 import '../utils/daily_mission_storage.dart';
 import '../l10n/app_localizations.dart';
@@ -45,13 +49,19 @@ class _SudokuScreenState extends State<SudokuScreen> {
   bool _isLoading = false;
   late ConfettiController _confettiController;
 
+  // 튜토리얼 관련
+  bool _showTutorial = false;
+  int _tutorialStep = 0;
+  final GlobalKey _smartInputButtonKey = GlobalKey();
+  final GlobalKey _numberButtonsKey = GlobalKey();
+  final GlobalKey _boardKey = GlobalKey();
+
 
   @override
   void initState() {
     super.initState();
     _confettiController = ConfettiController(duration: const Duration(seconds: 2));
-    AdHelper.preloadRewardedAd();
-
+    
     Future.doWhile(() async {
       await Future.delayed(const Duration(seconds: 1));
       if (mounted) {
@@ -61,7 +71,7 @@ class _SudokuScreenState extends State<SudokuScreen> {
       return false;
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final game = context.read<SudokuGame>();
       game.onCompletionCallback = () {
         // 1초 후 완료 다이얼로그 표시
@@ -74,6 +84,17 @@ class _SudokuScreenState extends State<SudokuScreen> {
       game.onGameOverCallback = () {
         _showGameOverDialog(context, game);
       };
+
+      // 스마트 입력 튜토리얼 체크
+      final tutorialCompleted = await TutorialStorage.isSmartInputTutorialCompleted();
+      if (!tutorialCompleted && mounted) {
+        // 0.5초 후 튜토리얼 시작 (화면이 안정화된 후)
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            _startSmartInputTutorial();
+          }
+        });
+      }
 
       // 일일 미션인 경우 퍼즐 로드
       if (widget.isDailyMission && widget.puzzleNumber != null) {
@@ -97,6 +118,91 @@ class _SudokuScreenState extends State<SudokuScreen> {
   void dispose() {
     _confettiController.dispose();
     super.dispose();
+  }
+
+  // 스마트 입력 튜토리얼 시작
+  void _startSmartInputTutorial() {
+    setState(() {
+      _showTutorial = true;
+      _tutorialStep = 0;
+    });
+  }
+
+  // 튜토리얼 다음 단계
+  void _nextTutorialStep() {
+    setState(() {
+      _tutorialStep++;
+      if (_tutorialStep >= 4) {
+        // 튜토리얼 완료
+        _completeTutorial();
+      }
+    });
+  }
+
+  // 튜토리얼 완료
+  void _completeTutorial() async {
+    setState(() {
+      _showTutorial = false;
+      _tutorialStep = 0;
+    });
+    await TutorialStorage.markSmartInputTutorialCompleted();
+  }
+
+  // 현재 튜토리얼 단계 정보 가져오기
+  TutorialStep? _getCurrentTutorialStep() {
+    if (!_showTutorial) return null;
+
+    switch (_tutorialStep) {
+      case 0:
+        // 단계 1: 화면 중앙 - 스마트 입력 설명
+        return const TutorialStep(
+          target: TutorialTarget.center,
+          message: '스마트 입력은 더 빠르고 쉽게\n입력 할 수 있는 기능입니다.',
+        );
+
+      case 1:
+        // 단계 2: 스마트 입력 버튼 강조
+        final buttonRect = _getWidgetRect(_smartInputButtonKey);
+        if (buttonRect == null) return null;
+        return TutorialStep(
+          target: TutorialTarget.smartInputButton,
+          message: '스마트 입력 버튼을 누르세요.',
+          highlightRect: buttonRect,
+        );
+
+      case 2:
+        // 단계 3: 하단 숫자 버튼 강조
+        final numberButtonsRect = _getWidgetRect(_numberButtonsKey);
+        if (numberButtonsRect == null) return null;
+        return TutorialStep(
+          target: TutorialTarget.numberButtons,
+          message: '하단 숫자를 선택하세요.',
+          highlightRect: numberButtonsRect,
+        );
+
+      case 3:
+        // 단계 4: 셀 강조
+        final boardRect = _getWidgetRect(_boardKey);
+        if (boardRect == null) return null;
+        return TutorialStep(
+          target: TutorialTarget.cell,
+          message: '선택한 숫자를 입력할 셀을\n선택하면 입력됩니다.',
+          highlightRect: boardRect,
+        );
+
+      default:
+        return null;
+    }
+  }
+
+  // 위젯의 화면상 위치 가져오기
+  Rect? _getWidgetRect(GlobalKey key) {
+    final RenderBox? renderBox = key.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return null;
+
+    final position = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+    return Rect.fromLTWH(position.dx, position.dy, size.width, size.height);
   }
 
   Offset _getHeartPosition(int heartIndex) {
@@ -230,121 +336,69 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 ),
               ],
             ),
-            actions: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextButton.icon(
-                    onPressed: () {
-                      print('>>> 하트 광고 버튼 클릭됨');
+              actions: [
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Toss 보상형 광고로 하트 복구
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        setState(() => _isLoading = true);
 
-                      RewardedAd? ad = AdHelper.getPreloadedRewardedAd();
-
-                      if (ad != null) {
-                        bool rewardEarned = false;
-
-                        ad.fullScreenContentCallback = FullScreenContentCallback(
-                          onAdFailedToShowFullScreenContent: (ad, error) {
-                            print('!!! 하트 광고 표시 실패: ${error.message}');
-                            ad.dispose();
+                        await AdHelper.showRewardedAd(
+                          onRewarded: () {
+                            // 광고 시청 완료 - 하트 복구
+                            game.addHeart();
+                            game.resumeTimer();
+                            setState(() => _isLoading = false);
                           },
-                          onAdDismissedFullScreenContent: (ad) {
-                            print('하트 광고 닫힘 - rewardEarned: $rewardEarned');
-                            ad.dispose();
-
-                            if (rewardEarned) {
-                              print('보상 지급: 하트 추가');
-                              game.addHeart();
-                              if (context.mounted) {
-                                Navigator.of(context).pop();
-                                game.resumeTimer();
-                              }
-                            }
+                          onAdFailed: () {
+                            // 광고 실패 시 게임 오버 다이얼로그 다시 표시
+                            setState(() => _isLoading = false);
+                            _showGameOverDialog(context, game);
                           },
                         );
+                      },
+                      icon: const Icon(Icons.video_library),
+                      label: Text(l10n.watchAdToGetHeart),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        setState(() => _isLoading = true);
 
-                        ad.show(
-                          onUserEarnedReward: (ad, reward) {
-                            print('광고 시청 보상 조건 충족!');
-                            rewardEarned = true;
-                          },
-                        );
-                      } else {
-                        print('!!! 하트 광고 로드 실패. 보상을 바로 지급합니다.');
-                        game.addHeart();
-                        if (context.mounted) {
-                          Navigator.of(context).pop();
-                          game.resumeTimer();
-                        }
-                      }
-                    },
-                    icon: const Icon(Icons.videocam),
-                    label: Text(l10n.adWatchHeartRecharge),
-                  ),
-                  TextButton.icon(
-                    onPressed: () async {
-                      Navigator.of(context).pop();
-                      setState(() => _isLoading = true);
+                        // 플레이 횟수 증가
+                        await PlayCounter.incrementPlayCount();
 
-                      // 플레이 횟수 증가
-                      await PlayCounter.incrementPlayCount();
-
-                      // 3회 이상일 때만 광고 표시
-                      bool shouldShowAd = await PlayCounter.shouldShowAd();
-
-                      if (shouldShowAd) {
-                        InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
-
-                        if (ad != null) {
-                          ad.fullScreenContentCallback = FullScreenContentCallback(
-                            onAdFailedToShowFullScreenContent: (ad, error) {
-                              print('!!! 전면 광고 표시 실패: ${error.message}');
-                              ad.dispose();
-                              game.resumeTimer();
-                              game.restartStage();
-                              setState(() => _isLoading = false);
-                            },
-                            onAdDismissedFullScreenContent: (ad) {
-                              print('전면 광고 닫힘');
-                              ad.dispose();
-                              game.resumeTimer();
-                              game.restartStage();
-                              setState(() => _isLoading = false);
-                            },
-                          );
-                          ad.show();
-                        } else {
-                          print('!!! 전면 광고 로드 실패. 바로 다시 시작합니다.');
-                          game.resumeTimer();
-                          game.restartStage();
-                          setState(() => _isLoading = false);
-                        }
-                      } else {
-                        print('플레이 횟수 3회 미만, 광고 스킵');
                         game.resumeTimer();
                         game.restartStage();
                         setState(() => _isLoading = false);
-                      }
-                    },
-                    icon: const Icon(Icons.restart_alt),
-                    label: Text(l10n.restart),
-                  ),
-                  TextButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // 게임 오버 다이얼로그 닫기
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const MainScreen(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.home),
-                    label: Text(l10n.home),
-                  ),
-                ],
-              ),
-            ],
+                      },
+                      icon: const Icon(Icons.restart_alt),
+                      label: Text(l10n.restart),
+                    ),
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // 게임 오버 다이얼로그 닫기
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => const MainScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.home),
+                      label: Text(l10n.home),
+                    ),
+                  ],
+                ),
+              ],
           ),
         );
       },
@@ -353,6 +407,15 @@ class _SudokuScreenState extends State<SudokuScreen> {
 
   void _showCompletionDialog(BuildContext context, SudokuGame game) async {
     final timeString = game.getElapsedTimeString();
+
+    // 완료 사운드 재생
+    SoundHelper.playCompleteSound();
+
+    // Toss 리더보드에 점수 제출 (웹 환경인 경우)
+    if (kIsWeb) {
+      final score = game.totalScore.toDouble();
+      await TossLeaderboardHelper.submitScore(score);
+    }
 
     // 일일 미션이면 완료 처리
     if (widget.isDailyMission && widget.dailyMissionDate != null) {
@@ -857,38 +920,11 @@ class _SudokuScreenState extends State<SudokuScreen> {
           // 플레이 횟수 증가
           await PlayCounter.incrementPlayCount();
 
-          // 3회 이상일 때만 광고 표시
-          bool shouldShowAd = await PlayCounter.shouldShowAd();
+          // 플레이 횟수 증가
+          await PlayCounter.incrementPlayCount();
 
-          if (shouldShowAd) {
-            InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
-
-            if (ad != null) {
-              ad.fullScreenContentCallback = FullScreenContentCallback(
-                onAdFailedToShowFullScreenContent: (ad, error) {
-                  print('!!! 전면 광고 표시 실패: ${error.message}');
-                  ad.dispose();
-                  game.loadStage(nextStage, difficulty: difficulty);
-                  setState(() => _isLoading = false);
-                },
-                onAdDismissedFullScreenContent: (ad) {
-                  print('전면 광고 닫힘');
-                  ad.dispose();
-                  game.loadStage(nextStage, difficulty: difficulty);
-                  setState(() => _isLoading = false);
-                },
-              );
-              ad.show();
-            } else {
-              print('!!! 전면 광고 로드 실패. 바로 다음 스테이지로 이동합니다.');
-              game.loadStage(nextStage, difficulty: difficulty);
-              setState(() => _isLoading = false);
-            }
-          } else {
-            print('플레이 횟수 3회 미만, 광고 스킵');
-            game.loadStage(nextStage, difficulty: difficulty);
-            setState(() => _isLoading = false);
-          }
+          game.loadStage(nextStage, difficulty: difficulty);
+          setState(() => _isLoading = false);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: isUnlocked ? color : Colors.grey,
@@ -963,42 +999,12 @@ class _SudokuScreenState extends State<SudokuScreen> {
           // 플레이 횟수 증가
           await PlayCounter.incrementPlayCount();
 
-          // 3회 이상일 때만 광고 표시
-          bool shouldShowAd = await PlayCounter.shouldShowAd();
+          // 플레이 횟수 증가
+          await PlayCounter.incrementPlayCount();
 
-          if (shouldShowAd) {
-            InterstitialAd? ad = AdHelper.getPreloadedInterstitialAd();
-
-            if (ad != null) {
-              ad.fullScreenContentCallback = FullScreenContentCallback(
-                onAdFailedToShowFullScreenContent: (ad, error) {
-                  print('!!! 전면 광고 표시 실패: ${error.message}');
-                  ad.dispose();
-                  game.resumeTimer();
-                  game.loadStage(nextStage, difficulty: difficulty);
-                  setState(() => _isLoading = false);
-                },
-                onAdDismissedFullScreenContent: (ad) {
-                  print('전면 광고 닫힘');
-                  ad.dispose();
-                  game.resumeTimer();
-                  game.loadStage(nextStage, difficulty: difficulty);
-                  setState(() => _isLoading = false);
-                },
-              );
-              ad.show();
-            } else {
-              print('!!! 전면 광고 로드 실패. 바로 새 게임을 시작합니다.');
-              game.resumeTimer();
-              game.loadStage(nextStage, difficulty: difficulty);
-              setState(() => _isLoading = false);
-            }
-          } else {
-            print('플레이 횟수 3회 미만, 광고 스킵');
-            game.resumeTimer();
-            game.loadStage(nextStage, difficulty: difficulty);
-            setState(() => _isLoading = false);
-          }
+          game.resumeTimer();
+          game.loadStage(nextStage, difficulty: difficulty);
+          setState(() => _isLoading = false);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: isUnlocked ? color : Colors.grey,
@@ -1206,16 +1212,24 @@ class _SudokuScreenState extends State<SudokuScreen> {
                   ],
                 ),
               ),
-              const Expanded(flex: 3, child: Center(child: SudokuBoard())),
-              const Expanded(flex: 1, child: NumberPad()),
-              SizedBox(
+              Expanded(
+                flex: 3,
+                child: Center(
+                  child: Container(
+                    key: _boardKey,
+                    child: const SudokuBoard(),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: NumberPad(
+                  smartInputButtonKey: _smartInputButtonKey,
+                  numberButtonsKey: _numberButtonsKey,
+                ),
+              ),
+                SizedBox(
                 height: 50,
-                child: game.isBannerAdLoaded && game.bannerAd != null
-                    ? Container(
-                        alignment: Alignment.center,
-                        child: AdWidget(ad: game.bannerAd!),
-                      )
-                    : Container(color: Colors.transparent),
               ),
             ],
           ),
@@ -1239,6 +1253,12 @@ class _SudokuScreenState extends State<SudokuScreen> {
                 color: Colors.white,
               ),
             ),
+          ),
+        // 튜토리얼 오버레이
+        if (_showTutorial && _getCurrentTutorialStep() != null)
+          TutorialOverlay(
+            step: _getCurrentTutorialStep()!,
+            onTap: _nextTutorialStep,
           ),
       ],
     );

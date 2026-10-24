@@ -4,7 +4,10 @@ import '../models/sudoku_game.dart';
 import '../l10n/app_localizations.dart';
 
 class NumberPad extends StatelessWidget {
-  const NumberPad({super.key});
+  final GlobalKey? smartInputButtonKey;
+  final GlobalKey? numberButtonsKey;
+
+  const NumberPad({super.key, this.smartInputButtonKey, this.numberButtonsKey});
 
   int _getRemainingCount(SudokuGame game, int number) {
     int count = 0;
@@ -41,15 +44,18 @@ class NumberPad extends StatelessWidget {
               children: [
                 // 스마트 입력 버튼
                 Flexible(
-                  child: _buildFunctionButton(
-                    onPressed: game.toggleSmartInputMode,
-                    icon: Icon(
-                      game.isSmartInputMode ? Icons.touch_app : Icons.touch_app_outlined,
-                      size: 13,
+                  child: Container(
+                    key: smartInputButtonKey,
+                    child: _buildFunctionButton(
+                      onPressed: game.toggleSmartInputMode,
+                      icon: Icon(
+                        game.isSmartInputMode ? Icons.touch_app : Icons.touch_app_outlined,
+                        size: 13,
+                      ),
+                      label: game.isSmartInputMode ? l10n.smartOn : l10n.smart,
+                      isActive: game.isSmartInputMode,
+                      activeColor: Colors.purple,
                     ),
-                    label: game.isSmartInputMode ? l10n.smartOn : l10n.smart,
-                    isActive: game.isSmartInputMode,
-                    activeColor: Colors.purple,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -99,28 +105,30 @@ class NumberPad extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             // 숫자 버튼 1-9 (한 줄, 최대 크기 제한)
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final totalWidth = constraints.maxWidth;
-                final spacing = 4.0;
-                final totalSpacing = spacing * 8; // 9개 버튼 사이 8개 간격
+            Container(
+              key: numberButtonsKey,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final totalWidth = constraints.maxWidth;
+                  final spacing = 4.0;
+                  final totalSpacing = spacing * 8; // 9개 버튼 사이 8개 간격
 
-                // 버튼 너비 계산 (최대 45px로 제한)
-                final calculatedWidth = (totalWidth - totalSpacing) / 9;
-                final buttonWidth = calculatedWidth > 45 ? 45.0 : calculatedWidth;
+                  // 버튼 너비 계산 (최대 45px로 제한)
+                  final calculatedWidth = (totalWidth - totalSpacing) / 9;
+                  final buttonWidth = calculatedWidth > 45 ? 45.0 : calculatedWidth;
 
-                // 버튼 높이 계산 (최대 60px로 제한)
-                final calculatedHeight = buttonWidth * 1.8;
-                final buttonHeight = calculatedHeight > 60 ? 60.0 : calculatedHeight;
+                  // 버튼 높이 계산 (최대 60px로 제한)
+                  final calculatedHeight = buttonWidth * 1.8;
+                  final buttonHeight = calculatedHeight > 60 ? 60.0 : calculatedHeight;
 
-                // 텍스트 크기 고정 (버튼이 최대 크기일 때 기준)
-                final numberFontSize = buttonWidth >= 45 ? 24.0 : buttonWidth * 0.53;
-                final remainingFontSize = buttonWidth >= 45 ? 12.0 : buttonWidth * 0.27;
+                  // 텍스트 크기 고정 (버튼이 최대 크기일 때 기준)
+                  final numberFontSize = buttonWidth >= 45 ? 24.0 : buttonWidth * 0.53;
+                  final remainingFontSize = buttonWidth >= 45 ? 12.0 : buttonWidth * 0.27;
 
-                // 텍스트 간격 (최대 1.2px로 제한)
-                final textSpacing = (buttonHeight * 0.03) > 1.2 ? 1.2 : buttonHeight * 0.03;
+                  // 텍스트 간격 (최대 1.2px로 제한)
+                  final textSpacing = (buttonHeight * 0.03) > 1.2 ? 1.2 : buttonHeight * 0.03;
 
-                return Row(
+                  return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(9, (index) {
                     final number = index + 1;
@@ -180,6 +188,7 @@ class NumberPad extends StatelessWidget {
                   }),
                 );
               },
+            ),
             ),
           ],
         ),

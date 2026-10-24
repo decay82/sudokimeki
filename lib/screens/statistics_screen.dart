@@ -83,14 +83,14 @@ class _StatisticsScreenState extends State<StatisticsScreen>
         children: [
           Text(
             label,
-            style: const TextStyle(fontSize: 16, color: Colors.black87),
+            style: const TextStyle(fontSize: 16, color: Color(0xFF4A3540)),
           ),
           Text(
             value,
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.blue,
+              color: Color(0xFFFF6B9D),
             ),
           ),
         ],
@@ -139,14 +139,21 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   Widget _buildCategoryHeader(String title) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      color: Colors.grey.shade200,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFFFE4EC).withOpacity(0.3),
+            const Color(0xFFFFD1DC).withOpacity(0.2),
+          ],
+        ),
+      ),
       width: double.infinity,
       child: Text(
         title,
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          color: Color(0xFFE91E63),
         ),
       ),
     );
@@ -228,12 +235,19 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFFFF9FA),
       appBar: widget.showAppBar
           ? AppBar(
               title: Text(l10n.statistics),
-              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              backgroundColor: const Color(0xFFFFE4EC),
+              foregroundColor: const Color(0xFFE91E63),
+              elevation: 0,
               bottom: TabBar(
                 controller: _tabController,
+                labelColor: const Color(0xFFE91E63),
+                unselectedLabelColor: const Color(0xFF8B7580),
+                indicatorColor: const Color(0xFFFF6B9D),
+                indicatorWeight: 3,
                 tabs: [
                   Tab(text: l10n.difficultyBeginner),
                   Tab(text: l10n.difficultyRookie),
@@ -244,54 +258,86 @@ class _StatisticsScreenState extends State<StatisticsScreen>
               ),
             )
           : null,
-      body: Column(
-        children: [
-          // 상단 타이틀 (showAppBar가 false일 때만 표시)
-          if (!widget.showAppBar)
-            SafeArea(
-              bottom: false,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    l10n.statistics,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFE4EC),
+              Color(0xFFFFF9FA),
+              Color(0xFFFFFFFF),
+            ],
+          ),
+        ),
+        child: Column(
+          children: [
+            // 상단 타이틀 (showAppBar가 false일 때만 표시)
+            if (!widget.showAppBar)
+              SafeArea(
+                bottom: false,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      const Text('📊', style: TextStyle(fontSize: 28)),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.statistics,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFFE91E63),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-          // TabBar (showAppBar가 false일 때)
-          if (!widget.showAppBar)
-            Container(
-              color: Theme.of(context).colorScheme.inversePrimary,
-              child: TabBar(
+            // TabBar (showAppBar가 false일 때)
+            if (!widget.showAppBar)
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  labelColor: const Color(0xFFE91E63),
+                  unselectedLabelColor: const Color(0xFF8B7580),
+                  indicatorColor: const Color(0xFFFF6B9D),
+                  indicatorWeight: 3,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                  tabs: [
+                    Tab(text: l10n.difficultyBeginner),
+                    Tab(text: l10n.difficultyRookie),
+                    Tab(text: l10n.difficultyEasy),
+                    Tab(text: l10n.difficultyMedium),
+                    Tab(text: l10n.difficultyHard),
+                  ],
+                ),
+              ),
+            Expanded(
+              child: TabBarView(
                 controller: _tabController,
-                tabs: [
-                  Tab(text: l10n.difficultyBeginner),
-                  Tab(text: l10n.difficultyRookie),
-                  Tab(text: l10n.difficultyEasy),
-                  Tab(text: l10n.difficultyMedium),
-                  Tab(text: l10n.difficultyHard),
+                children: [
+                  _buildStatsContent(beginnerStats, 'beginner', l10n.difficultyBeginner, context),
+                  _buildStatsContent(rookieStats, 'rookie', l10n.difficultyRookie, context),
+                  _buildStatsContent(easyStats, 'easy', l10n.difficultyEasy, context),
+                  _buildStatsContent(mediumStats, 'medium', l10n.difficultyMedium, context),
+                  _buildStatsContent(hardStats, 'hard', l10n.difficultyHard, context),
                 ],
               ),
             ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildStatsContent(beginnerStats, 'beginner', l10n.difficultyBeginner, context),
-                _buildStatsContent(rookieStats, 'rookie', l10n.difficultyRookie, context),
-                _buildStatsContent(easyStats, 'easy', l10n.difficultyEasy, context),
-                _buildStatsContent(mediumStats, 'medium', l10n.difficultyMedium, context),
-                _buildStatsContent(hardStats, 'hard', l10n.difficultyHard, context),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

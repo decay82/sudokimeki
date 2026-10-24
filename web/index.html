@@ -29,10 +29,151 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>flutter_application_1</title>
+  <title>Sudoku - 스도쿠</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Toss Apps in Toss SDK -->
+  <script src="https://static.toss.im/toss-bedrock/sdk/latest/bedrock.js"></script>
 </head>
 <body>
+  <!-- Flutter 앱 -->
   <script src="flutter_bootstrap.js" async></script>
+
+  <!-- Toss SDK 광고 래퍼 함수 -->
+  <script>
+    // Toss SDK 광고 로드 함수
+    window.loadTossAd = function(adUnitId, onSuccess, onError) {
+      try {
+        console.log('[Toss SDK] 광고 로드 시작:', adUnitId);
+
+        if (typeof bedrock === 'undefined' || !bedrock.loadAppsInTossAdMob) {
+          console.error('[Toss SDK] Bedrock SDK가 로드되지 않았습니다.');
+          if (onError) onError('SDK not loaded');
+          return;
+        }
+
+        bedrock.loadAppsInTossAdMob({
+          adUnitId: adUnitId,
+          onAdLoaded: function() {
+            console.log('[Toss SDK] 광고 로드 완료:', adUnitId);
+            if (onSuccess) onSuccess();
+          },
+          onAdFailedToLoad: function(error) {
+            console.error('[Toss SDK] 광고 로드 실패:', error);
+            if (onError) onError(error);
+          }
+        });
+      } catch (e) {
+        console.error('[Toss SDK] 광고 로드 예외:', e);
+        if (onError) onError(e.message);
+      }
+    };
+
+    // Toss SDK 광고 표시 함수
+    window.showTossAd = function(adUnitId, onSuccess, onRewarded, onClosed, onError) {
+      try {
+        console.log('[Toss SDK] 광고 표시 시작:', adUnitId);
+
+        if (typeof bedrock === 'undefined' || !bedrock.showAppsInTossAdMob) {
+          console.error('[Toss SDK] Bedrock SDK가 로드되지 않았습니다.');
+          if (onError) onError('SDK not loaded');
+          return;
+        }
+
+        bedrock.showAppsInTossAdMob({
+          adUnitId: adUnitId,
+          onAdShown: function() {
+            console.log('[Toss SDK] 광고 표시됨:', adUnitId);
+          },
+          onUserEarnedReward: function(reward) {
+            console.log('[Toss SDK] 보상 지급:', reward);
+            if (onRewarded) onRewarded(reward);
+          },
+          onAdDismissed: function() {
+            console.log('[Toss SDK] 광고 종료:', adUnitId);
+            if (onClosed) onClosed();
+            if (onSuccess) onSuccess();
+          },
+          onAdFailedToShow: function(error) {
+            console.error('[Toss SDK] 광고 표시 실패:', error);
+            if (onError) onError(error);
+          }
+        });
+      } catch (e) {
+        console.error('[Toss SDK] 광고 표시 예외:', e);
+        if (onError) onError(e.message);
+      }
+    };
+
+    console.log('[Toss SDK] 광고 래퍼 함수 초기화 완료');
+  </script>
+
+  <!-- Toss SDK 게임센터 리더보드 래퍼 함수 -->
+  <script>
+    // 리더보드 점수 제출 함수
+    window.submitTossLeaderboardScore = function(score, onSuccess, onError) {
+      try {
+        console.log('[Toss SDK] 리더보드 점수 제출 시작:', score);
+
+        if (typeof bedrock === 'undefined' || !bedrock.submitGameCenterLeaderBoardScore) {
+          console.error('[Toss SDK] submitGameCenterLeaderBoardScore가 로드되지 않았습니다.');
+          if (onError) onError('SDK not loaded');
+          return;
+        }
+
+        bedrock.submitGameCenterLeaderBoardScore({ score: score })
+          .then(function(result) {
+            if (!result) {
+              console.warn('[Toss SDK] 지원하지 않는 앱 버전');
+              if (onError) onError('Unsupported version');
+              return;
+            }
+
+            if (result.statusCode === 'SUCCESS') {
+              console.log('[Toss SDK] 점수 제출 성공:', score);
+              if (onSuccess) onSuccess(result);
+            } else {
+              console.error('[Toss SDK] 제출 실패:', result.statusCode);
+              if (onError) onError(result.statusCode);
+            }
+          })
+          .catch(function(error) {
+            console.error('[Toss SDK] 점수 제출 예외:', error);
+            if (onError) onError(error.message || error);
+          });
+      } catch (e) {
+        console.error('[Toss SDK] 점수 제출 예외:', e);
+        if (onError) onError(e.message);
+      }
+    };
+
+    // 리더보드 열기 함수
+    window.openTossLeaderboard = function(onSuccess, onError) {
+      try {
+        console.log('[Toss SDK] 리더보드 열기 시작');
+
+        if (typeof bedrock === 'undefined' || !bedrock.openGameCenterLeaderboard) {
+          console.error('[Toss SDK] openGameCenterLeaderboard가 로드되지 않았습니다.');
+          if (onError) onError('SDK not loaded');
+          return;
+        }
+
+        bedrock.openGameCenterLeaderboard()
+          .then(function(result) {
+            console.log('[Toss SDK] 리더보드 열기 성공');
+            if (onSuccess) onSuccess(result);
+          })
+          .catch(function(error) {
+            console.error('[Toss SDK] 리더보드 열기 예외:', error);
+            if (onError) onError(error.message || error);
+          });
+      } catch (e) {
+        console.error('[Toss SDK] 리더보드 열기 예외:', e);
+        if (onError) onError(e.message);
+      }
+    };
+
+    console.log('[Toss SDK] 게임센터 리더보드 래퍼 함수 초기화 완료');
+  </script>
 </body>
 </html>

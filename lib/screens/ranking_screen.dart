@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/ranking_entry.dart';
 import '../utils/weekly_bot_ranking.dart';
 import '../utils/ranking_history_storage.dart';
+import '../utils/toss_leaderboard_helper.dart';
 import '../l10n/app_localizations.dart';
 import 'ranking_history_screen.dart';
 
@@ -307,39 +309,74 @@ class _RankingScreenState extends State<RankingScreen>
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFFFF9FA),
       appBar: widget.showAppBar
           ? AppBar(
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(l10n.ranking),
-                  Text(
-                    _timeRemaining,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red.shade700,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF4757).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.timer, size: 16, color: Color(0xFFFF4757)),
+                        const SizedBox(width: 4),
+                        Text(
+                          _timeRemaining,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFF4757),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.emoji_events),
-                    tooltip: l10n.rankingHistory,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RankingHistoryScreen(),
+                  Row(
+                    children: [
+                      // Toss 리더보드 버튼 (Web 환경에서만 표시)
+                      if (kIsWeb)
+                        IconButton(
+                          icon: const Icon(Icons.leaderboard),
+                          tooltip: 'Toss 리더보드',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () {
+                            TossLeaderboardHelper.openLeaderboard();
+                          },
                         ),
-                      );
-                    },
+                      IconButton(
+                        icon: const Icon(Icons.emoji_events_rounded),
+                        tooltip: l10n.rankingHistory,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const RankingHistoryScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
-              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              backgroundColor: const Color(0xFFFFE4EC),
+              foregroundColor: const Color(0xFFE91E63),
+              elevation: 0,
               bottom: TabBar(
                 controller: _tabController,
+                labelColor: const Color(0xFFE91E63),
+                unselectedLabelColor: const Color(0xFF8B7580),
+                indicatorColor: const Color(0xFFFF6B9D),
+                indicatorWeight: 3,
                 tabs: [
                   Tab(text: l10n.difficultyEasy),
                   Tab(text: l10n.difficultyMedium),
@@ -348,76 +385,153 @@ class _RankingScreenState extends State<RankingScreen>
               ),
             )
           : null,
-      body: Column(
-        children: [
-          // 상단 타이틀 (showAppBar가 false일 때만 표시)
-          if (!widget.showAppBar)
-            SafeArea(
-              bottom: false,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                color: Theme.of(context).colorScheme.inversePrimary,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      l10n.ranking,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      _timeRemaining,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red.shade700,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.emoji_events),
-                      tooltip: l10n.rankingHistory,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const RankingHistoryScreen(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFE4EC),
+              Color(0xFFFFF9FA),
+              Color(0xFFFFFFFF),
+            ],
+          ),
+        ),
+        child: Column(
+          children: [
+            // 상단 타이틀 (showAppBar가 false일 때만 표시)
+            if (!widget.showAppBar)
+              SafeArea(
+                bottom: false,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          const Text('🏆', style: TextStyle(fontSize: 28)),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.ranking,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFFE91E63),
+                            ),
                           ),
-                        );
-                      },
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF4757).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.timer, size: 16, color: Color(0xFFFF4757)),
+                            const SizedBox(width: 4),
+                            Text(
+                              _timeRemaining,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFFF4757),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          // Toss 리더보드 버튼 (Web 환경에서만 표시)
+                          if (kIsWeb)
+                            Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF6B9D).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: const Icon(Icons.leaderboard),
+                                color: const Color(0xFFE91E63),
+                                tooltip: 'Toss 리더보드',
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                onPressed: () {
+                                  TossLeaderboardHelper.openLeaderboard();
+                                },
+                              ),
+                            ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF6B9D).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.emoji_events_rounded),
+                              color: const Color(0xFFFF9800),
+                              tooltip: l10n.rankingHistory,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const RankingHistoryScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            // TabBar (showAppBar가 false일 때)
+            if (!widget.showAppBar)
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
+                child: TabBar(
+                  controller: _tabController,
+                  labelColor: const Color(0xFFE91E63),
+                  unselectedLabelColor: const Color(0xFF8B7580),
+                  indicatorColor: const Color(0xFFFF6B9D),
+                  indicatorWeight: 3,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                  tabs: [
+                    Tab(text: l10n.difficultyEasy),
+                    Tab(text: l10n.difficultyMedium),
+                    Tab(text: l10n.difficultyHard),
+                  ],
+                ),
               ),
-            ),
-          // TabBar (showAppBar가 false일 때)
-          if (!widget.showAppBar)
-            Container(
-              color: Theme.of(context).colorScheme.inversePrimary,
-              child: TabBar(
+            Expanded(
+              child: TabBarView(
                 controller: _tabController,
-                tabs: [
-                  Tab(text: l10n.difficultyEasy),
-                  Tab(text: l10n.difficultyMedium),
-                  Tab(text: l10n.difficultyHard),
+                children: [
+                  _buildRankingList(easyRanking, _easyScrollController),
+                  _buildRankingList(mediumRanking, _mediumScrollController),
+                  _buildRankingList(hardRanking, _hardScrollController),
                 ],
               ),
             ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildRankingList(easyRanking, _easyScrollController),
-                _buildRankingList(mediumRanking, _mediumScrollController),
-                _buildRankingList(hardRanking, _hardScrollController),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
